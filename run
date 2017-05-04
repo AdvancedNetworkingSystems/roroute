@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [ $# -eq 1 ]; then
+	playbook=$1
+else
+	playbook=echo-hostname.yaml
+fi
+
+MASTER_NODE=nuc0-32.wilab1.ilabt.iminds.be
+MASTER_NODE=nuc10
+CONFIG_FILE=$HOME/.ssh/wilab1-ssh.cfg
+CONFIG_FILE=$HOME/.ssh/twist-ssh.cfg
+HOME_FOLDER=`ssh -F ${CONFIG_FILE} ${MASTER_NODE} "pwd"`
+ANSIBLE_FOLDER=${HOME_FOLDER}/ansible/
+
+ssh -F ${CONFIG_FILE} ${MASTER_NODE} "mkdir -p ${ANSIBLE_FOLDER}"
+rsync -avcz -e "ssh -F ${CONFIG_FILE} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --progress ./ ${MASTER_NODE}:${ANSIBLE_FOLDER}
+ssh -A -F ${CONFIG_FILE} ${MASTER_NODE} "cd ${ANSIBLE_FOLDER} && ./install-ansible.sh && ansible-playbook $playbook"
