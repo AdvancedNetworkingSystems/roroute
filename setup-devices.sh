@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # determine whether we are on a NUC or on a TPLINK
 opkg_path=`which opkg`
-if [ "$opkg_path" == "" ]; then
+if [ -z "$opkg_path" ]; then
 	tplink=0
 	SUDO=sudo
 else
