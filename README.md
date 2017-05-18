@@ -26,6 +26,9 @@ Before running the scripts you need to modify the following files
    are the `ansible` playbooks used to setup the nodes. Inside them you find
    the field `hosts` indicating on which nodes the playbooks should be run.
    Change this field to match the entries in your `hosts` file.
+ * `etchosts`: this file is copied to `/etc/hosts` for easy pings and for
+   setting the IP address to a node depending on its hostname. Change this
+   according to your needs.
 
 Once these steps are done, you are ready to setup the nodes:
  * `run copy-files.yaml`: copies the configuration scripts and other files to
