@@ -1,6 +1,46 @@
 POPROW Scripts Repo
 ===
 
+## Automatic Nodes Setup
+
+The repository includes some `ansible` playbooks that are used to automatically
+configure the nodes before starting any experiment.
+
+Before running the scripts you need to modify the following files
+
+ * `hosts`: this includes the list of nodes that will be used in the
+   experiment, i.e., the nodes that you want `ansible` to work with. By
+   default, the file includes all hosts from all testbeds. If you don't want to
+   touch it, you can make a copy and the edit `ansible.cfg` and change the
+   `inventory` field accordingly.
+ * `run`: this works as a launcher for all ansible playbooks. Instead of
+   typing `ansible-playbook playbook.yaml` you type `./run playbook.yaml`.
+   This copies the content of the whole folder on the master node and
+   launches the `ansible-playbook` on the master node, to avoid being blocked
+   by a firewall because of the many `ssh` connections. Before starting you
+   need to edit the file to choose the master node. This is done by editing
+   the `MASTER_NODE` variable. In addition, you need to edit the
+   `CONFIG_FILE` variable, which points to an `ssh` config file which tells
+   `ssh` how to properly reach the node.
+ * `copy-files.yaml`, `setup-devices.yaml`, `setup-interfaces.yaml`: these
+   are the `ansible` playbooks used to setup the nodes. Inside them you find
+   the field `hosts` indicating on which nodes the playbooks should be run.
+   Change this field to match the entries in your `hosts` file.
+
+Once these steps are done, you are ready to setup the nodes:
+ * `run copy-files.yaml`: copies the configuration scripts and other files to
+    all nodes.
+ * `run setup-devices.yaml`: installs required software (e.g., `python`,
+   `git`, python packages, etc.) on all nodes.
+ * `run setup-interfaces.yaml`: configures the network interface according to
+   the given parameters to enable networking between testbed nodes. This
+   script accepts parameters to configure the wireless interfaces in
+   different ways. In particular you can choose rate, channel, and
+   transmission power using the following syntax:
+   `run setup-interfaces.yaml "rate=54 channel=1 power=2000"`
+   The example uses the default parameters used when these are not specified.
+   For more information on the possible parameter values, see the next section.
+
 ## Wi-Fi Network Interface Configuration
 
 The python script poprow_setup_interface.py can be used for bringing up an
@@ -11,39 +51,34 @@ on the same channel as the adhoc interface that can be used for traffic
 monitoring. The script requires the following parameters (in the current
 implementation, with the exception of --bint, the are all mandatory).
 
-* __-\-intcap__: possible values are "HT" and "VHT". It is used to specify the
+* `--intcap`: possible values are "HT" and "VHT". It is used to specify the
   capabilities that must be supported by the NIC that will be used for
-configuring the interface. Currently the TKN WIreless NetworkS Testbed (TWIST)
-supports only "HT".
+  configuring the interface. Currently the TKN WIreless NetworkS Testbed (TWIST)
+  supports only "HT".
 
-* __-\-band__: specifies which band the network interface will work in. Accepted
-  values are "5GHz" and "2GHz" for the 5GHz and the 2.4GHz bands respectively.
+* `--chan`: specifies in which channel to configure the network interface.
+  Accepted values for --chan are [1-13] (2.4 GHz) and [36, 40 and 44] (5 GHz).
 
-* __-\-chan__: specifies in which channel to configure the network interface. If
-  the band parameter is "2GHz" the accepted values for --chan are [1-13].
-Instead, if the band parameter is "5GHz" the accepted values for --chan are [36,
-40 and 44].
-
-* __-\-legacyrate__: configures the 802.11g rate to use for frame transmissions.
+* `--legacyrate`: configures the 802.11g rate to use for frame transmissions.
   Accepted values are [6, 9, 12, 18, 24 36, 48, 54].
 
-* __-\-txpower__: configures the transmission power in millibel-milliwatts (mBm)
+* `--txpower`: configures the transmission power in millibel-milliwatts (mBm)
   (<power in mBm> = 100 * <power in dBm>). Accepted values goes from 0 to 3000
-(the actual maximum power depends on selected channel and the actual power
-selection granularity depend on the PHY).
+  (the actual maximum power depends on selected channel and the actual power
+  selection granularity depend on the PHY).
 
-* __-\-inet__: sets the interface IPv4 address. The accepted format is
+* `--inet`: sets the interface IPv4 address. The accepted format is
   x.y.z.t/nm.
 
-* __-\-ibssid__: configures the BSSID of the adhoc network.
+* `--ibssid`: configures the BSSID of the adhoc network.
 
-* __-\-ibssiname__: configures the name of the local adhoc interface.
+* `--ibssiname`: configures the name of the local adhoc interface.
 
-* __-\-moniname__: configures the name of the local monitor interface (this
+* `--moniname`: configures the name of the local monitor interface (this
   interface shares the same PHY as the adhoc interface and can be used for
-traffic monitoring).
+  traffic monitoring).
 
-* __-\-bint__: configure the beacon interval in TUs (default values 100TUs).
+* `--bint`: configure the beacon interval in TUs (default values 100TUs).
 
 
 ### Example
@@ -62,5 +97,7 @@ An adhoc network interface called _poprow0_ with the following characteristics:
 can be configured by executing the following command (as root):
 
 ```bash
-./poprow_setup_interface.py --intcap=HT --band=2GHz --chan=1 --legacyrate=6 --txpower=2000 --inet=192.168.100.10/24 --ibssid=poprow --ibssiname=poprow0 --moniname=mon0 --bint=200
+./poprow_setup_interface.py --intcap=HT --chan=1 --legacyrate=6 \
+  --txpower=2000 --inet=192.168.100.10/24 --ibssid=poprow --ibssiname=poprow0 \
+  --moniname=mon0 --bint=200
 ```
