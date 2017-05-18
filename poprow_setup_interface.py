@@ -46,11 +46,11 @@ if __name__ == '__main__':
     parser.add_argument('--intcap', dest='intcap', choices=['HT', 'VHT'],
                         type=str, help='Interface capabilities',
                         required=True)
-    parser.add_argument('--band', dest='band', choices=['5GHz', '2GHz'],
-                        type=str, help='Band to use: 2.4GHz or 5GHz',
-                        required=True)
-    allowed_channels_24ghz = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-    allowed_channels_5ghz = [36, 40, 44]
+    # parser.add_argument('--band', dest='band', choices=['5GHz', '2GHz'],
+    #                     type=str, help='Band to use: 2.4GHz or 5GHz',
+    #                     required=True)
+    allowed_channels_24ghz = range(1, 14)
+    allowed_channels_5ghz = [36, 40, 44, 48, 52, 56, 60, 149, 153, 157, 161]
     parser.add_argument('--chan', dest='chan',
                         choices=allowed_channels_24ghz + allowed_channels_5ghz,
                         type=int, help='Channel',
@@ -95,6 +95,10 @@ if __name__ == '__main__':
     for wifi_int_name in wifi_int:
         pyw.devdel(pyw.getcard(wifi_int_name))
 
+    band = "2GHz"
+    if args.chan > 14:
+        band = "5GHz"
+
     # Look for a candidate PHY (currently based on frequency and capabilities
     # (HT or VHT) support
     phys = pyw.phylist()
@@ -102,7 +106,7 @@ if __name__ == '__main__':
 
     for phy in phys:
         phy_info = pyw.phyinfo(pyw.Card(phy[0], None, 0))
-        if bool(phy_info['bands'][args.band][args.intcap]):
+        if bool(phy_info['bands'][band][args.intcap]):
             selected_phy = phy
             # print(selected_phy)
             break
@@ -152,7 +156,7 @@ if __name__ == '__main__':
 
         # Set legacy rate
         legacy_str = 'legacy-'
-        if args.band == '2GHz':
+        if band == '2GHz':
             legacy_str += '2.4'
         else:
             legacy_str += '5'
