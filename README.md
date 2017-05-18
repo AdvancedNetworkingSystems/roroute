@@ -99,7 +99,7 @@ An adhoc network interface called _poprow0_ with the following characteristics:
 
 can be configured by executing the following command (as root):
 
-```bash
+```
 ./poprow_setup_interface.py --intcap=HT --chan=1 --legacyrate=6 \
   --txpower=2000 --inet=192.168.100.10/24 --ibssid=poprow --ibssiname=poprow0 \
   --moniname=mon0 --bint=200
