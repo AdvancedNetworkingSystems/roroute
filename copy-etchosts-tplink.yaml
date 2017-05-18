@@ -1,0 +1,5 @@
+---
+- hosts: twist-tplink
+  tasks:
+  - name: copy etchosts
+    command: cp "{{ ansible_env.HOME }}/etchosts" /etc/hosts

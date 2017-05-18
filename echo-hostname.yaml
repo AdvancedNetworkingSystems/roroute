@@ -1,0 +1,8 @@
+---
+- hosts: wilab1
+  tasks:
+  - name: echo hostname
+    command: hostname
+    register: result
+  - debug:
+      msg: "Hostname: {{ result['stdout'] }}"

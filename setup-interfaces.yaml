@@ -1,0 +1,16 @@
+---
+- hosts: twist-nuc twist-tplink
+  tasks:
+  - name: set rate
+    set_fact:
+      rate: "54"
+  - name: set channel
+    set_fact:
+      channel: "1"
+  - name: set power
+    set_fact:
+      power: "2000"
+  - name: setup nodes
+    command: "/usr/bin/env sh setup-interfaces.sh {{ rate }} {{ channel }} {{ power }} "
+    args:
+      chdir: "{{ ansible_env.HOME }}"
