@@ -16,7 +16,7 @@ footer = """</rspec>"""
 
 nuc_template = """<node client_id="nuc%02d" exclusive="true" \
 component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" \
-component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc%02d">
+component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc%d">
   <sliver_type name="raw-pc"/>
   <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="%f" y="%f"/>
 </node>"""
