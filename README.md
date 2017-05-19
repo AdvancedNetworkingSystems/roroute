@@ -31,6 +31,7 @@ Before running the scripts you need to modify the following files
    according to your needs.
 
 Once these steps are done, you are ready to setup the nodes:
+
  * `run copy-files.yaml`: copies the configuration scripts and other files to
     all nodes.
  * `run setup-devices.yaml`: installs required software (e.g., `python`,
