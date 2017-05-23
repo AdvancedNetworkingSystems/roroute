@@ -1,13 +1,15 @@
 ---
-- hosts: twist-nuc twist-tplink
+- hosts: "{{ testbed | default('twist') }}"
   tasks:
   - name: set home
     set_fact:
       home_dir: "{{ lookup('env', 'HOME') }}"
   - name: archive file
-    local_action: command tar -C "{{ home_dir }}/ansible" -czf /tmp/files.bzip pop-ping.py pop-recv.py poprow_setup_interface.py setup-devices.sh setup-interfaces.sh setup-olsr.sh etchosts
+    local_action: command tar -C "{{ home_dir }}/ansible" -czf /tmp/files.bzip pop-ping.py pop-recv.py poprow_setup_interface.py setup-devices.sh setup-interfaces.sh setup-olsr.sh copy-etchosts.sh etchosts
   - unarchive:
       src: "/tmp/files.bzip"
       dest: "{{ ansible_env.HOME }}/"
-- include: copy-etchosts-nuc.yaml
-- include: copy-etchosts-tplink.yaml
+  - name: copy etchosts
+    command: "/usr/bin/env sh copy-etchosts.sh"
+    args:
+      chdir: "{{ ansible_env.HOME }}"

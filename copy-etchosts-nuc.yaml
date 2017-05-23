@@ -1,7 +1,0 @@
----
-- hosts: twist-nuc
-  tasks:
-  - name: copy etchosts
-    command: cp "{{ ansible_env.HOME }}/etchosts" /etc/hosts
-    become: True
-    become_user: root

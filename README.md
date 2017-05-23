@@ -22,10 +22,6 @@ Before running the scripts you need to modify the following files
    the `MASTER_NODE` variable. In addition, you need to edit the
    `CONFIG_FILE` variable, which points to an `ssh` config file which tells
    `ssh` how to properly reach the node.
- * `copy-files.yaml`, `setup-devices.yaml`, `setup-interfaces.yaml`: these
-   are the `ansible` playbooks used to setup the nodes. Inside them you find
-   the field `hosts` indicating on which nodes the playbooks should be run.
-   Change this field to match the entries in your `hosts` file.
  * `etchosts`: this file is copied to `/etc/hosts` for easy pings and for
    setting the IP address to a node depending on its hostname. Change this
    according to your needs.
@@ -33,9 +29,12 @@ Before running the scripts you need to modify the following files
 Once these steps are done, you are ready to setup the nodes:
 
  * `run copy-files.yaml`: copies the configuration scripts and other files to
-    all nodes.
+    all nodes. By default the command runs ansible on the TWIST testbed. If you
+    want to choose a different testbed (in your `hosts` file) use the `testbed`
+    parameter, e.g., `run copy-files.yaml "testbed=wilab1"`.
  * `run setup-devices.yaml`: installs required software (e.g., `python`,
-   `git`, python packages, etc.) on all nodes.
+   `git`, python packages, etc.) on all nodes. As for `copy-files.yaml`, you can
+   choose a different testbed with the `testbed` parameter.
  * `run setup-interfaces.yaml`: configures the network interface according to
    the given parameters to enable networking between testbed nodes. This
    script accepts parameters to configure the wireless interfaces in
@@ -44,6 +43,8 @@ Once these steps are done, you are ready to setup the nodes:
    `run setup-interfaces.yaml "rate=54 channel=1 power=2000"`
    The example uses the default parameters used when these are not specified.
    For more information on the possible parameter values, see the next section.
+   As for `copy-files.yaml`, you can choose a different testbed with the
+   `testbed` parameter.
 
 ## Wi-Fi Network Interface Configuration
 

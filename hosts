@@ -1,4 +1,4 @@
-[twist-nuc]
+[twist]
 nuc4
 nuc6
 nuc10
@@ -6,7 +6,6 @@ nuc11
 nuc12
 nuc13
 nuc14
-[twist-tplink]
 tplink01
 tplink02
 tplink03

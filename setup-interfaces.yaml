@@ -1,5 +1,5 @@
 ---
-- hosts: twist-nuc twist-tplink
+- hosts: "{{ testbed | default('twist') }}"
   tasks:
   - name: set rate
     set_fact:
