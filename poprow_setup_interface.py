@@ -106,11 +106,12 @@ if __name__ == '__main__':
 
     for phy in phys:
         phy_info = pyw.phyinfo(pyw.Card(phy[0], None, 0))
-        if phy_info['bands'].get(band):
+        if phy_info['bands'].get(band) and phy_info.get('modes'):
             if bool(phy_info['bands'][band][args.intcap]):
-                selected_phy = phy
-                # print(selected_phy)
-                break
+                if 'ibss' in phy_info['modes']:
+                    selected_phy = phy
+                    # print(selected_phy)
+                    break
 
     # Add and configure mesh and monitor interfaces
     if selected_phy is not None:
