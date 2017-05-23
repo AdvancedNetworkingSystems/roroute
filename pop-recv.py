@@ -19,6 +19,7 @@
 # 02110-1301, USA.
 #
 
+import os
 import signal
 import sys
 import socket
@@ -47,6 +48,8 @@ def main():
                         help="Output file where to store results [default: "
                              "stdout]", metavar="FILENAME")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true")
+    parser.add_argument("-d", "--daemon", dest="daemon", action="store_true",
+                        help="Daemonize the process")
 
 
     # parse options
@@ -57,6 +60,7 @@ def main():
     port = args.port
     filename = args.filename
     verbose = args.verbose
+    daemon = args.daemon
 
     ip = IPRoute()
     if_index = ip.link_lookup(ifname=interface)
@@ -74,6 +78,11 @@ def main():
 
     # get hostname as additional information for the log file
     hostname = socket.gethostname()
+
+    if not daemon:
+        signal.signal(signal.SIGTERM, signal_handler)
+    else:
+        daemonize()
 
     # setup output file
     if filename == "":
@@ -126,7 +135,32 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
+def daemonize():
+    cwd = os.getcwd()
+    try:
+        pid = os.fork()
+        if pid > 0:
+            # exit first parent
+            sys.exit(0)
+    except OSError, e:
+        sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+        sys.exit(1)
+
+    # decouple from parent environment
+    os.chdir(cwd)
+    os.setsid()
+    os.umask(0)
+
+    try:
+        pid = os.fork()
+        if pid > 0:
+            # exit first parent
+            sys.exit(0)
+    except OSError, e:
+        sys.stderr.write("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+        sys.exit(1)
+
+
 # start main() when run interactively
 if __name__ == '__main__':
-    signal.signal(signal.SIGTERM, signal_handler)
     main()
