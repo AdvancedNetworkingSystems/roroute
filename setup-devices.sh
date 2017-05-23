@@ -13,7 +13,7 @@ fi
 if [ $tplink -eq 1 ]; then
 	opkg install python python-pip
 else
-	sudo apt-get install python python-pip
+	sudo apt-get install -y python python-pip
 	sudo pip install setuptools
 fi
 ${SUDO} pip install pyric pyroute2 ipaddr
