@@ -1,0 +1,7 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: start pop-recv
+    command: "/usr/bin/env sh start-pop-recv.sh "
+    args:
+      chdir: "{{ ansible_env.HOME }}"

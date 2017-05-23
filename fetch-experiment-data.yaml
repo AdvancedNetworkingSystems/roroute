@@ -1,0 +1,24 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set rate
+    set_fact:
+      rate: "54"
+  - name: set channel
+    set_fact:
+      channel: "1"
+  - name: set power
+    set_fact:
+      power: "2000"
+  - name: set count
+    set_fact:
+      n: "100"
+  - name: set interval
+    set_fact:
+      int: "0.2"
+  - name: create results directory
+    local_action: command mkdir -p "{{ ansible_env.HOME }}/results"
+  - fetch:
+      src: "{{ ansible_env.HOME }}/experiment.csv"
+      dest: "{{ ansible_env.HOME }}/results/{{ inventory_hostname }}_{{ rate }}_{{ channel }}_{{ power }}_{{ n }}_{{ int }}.csv"
+      flat: yes

@@ -1,0 +1,14 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  serial: 1
+  tasks:
+  - name: set count
+    set_fact:
+      n: "100"
+  - name: set interval
+    set_fact:
+      int: "0.2"
+  - name: start pop-ping
+    command: "/usr/bin/env sh start-pop-ping.sh {{ n }} {{ int }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"

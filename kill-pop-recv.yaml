@@ -1,0 +1,7 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: kill pop-recv
+    command: "/usr/bin/env sh kill-pop-recv.sh "
+    args:
+      chdir: "{{ ansible_env.HOME }}"
