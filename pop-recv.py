@@ -114,6 +114,7 @@ def main():
                       (count, src, src_port)
             outfile.write("%s,%s,%s,%s,%d\n" % (hostname, address, remote_host,
                                                 src, count))
+            outfile.flush()
         except SystemExit:
             run = False
             if verbose:
@@ -128,6 +129,7 @@ def main():
                 print >> sys.stderr, "Error while receiving packet. Quitting"
 
     sock.close()
+    outfile.flush()
     outfile.close()
 
 
