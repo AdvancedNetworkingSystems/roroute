@@ -20,6 +20,6 @@ else
 	host_name=`uci get system.@system[0].hostname`
 fi
 
-ip_addr=`cat /etc/hosts | grep pop-$host_name | cut -d' ' -f 1`
+ip_addr=`cat /etc/hosts | grep "pop-$host_name\$" | cut -d' ' -f 1`
 
 $(which sudo) python poprow_setup_interface.py --intcap=HT --chan=$channel --legacyrate=$rate --inet=${ip_addr}/16 --ibssid=poprow --ibssiname=poprow0 --moniname=mon0 --bint=200 --txpower=$power
