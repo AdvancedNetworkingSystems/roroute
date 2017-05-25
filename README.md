@@ -1,6 +1,22 @@
 POPROW Scripts Repo
 ===
 
+## Testbed Resource Allocation
+
+ * `omni`: this is a tools that is required to perform operations on the 
+   testbeds, such as creating experiments and allocating resources. Download 
+   the sources from
+   [here](http://software.geni.net/local-sw/download&software=gcf-2.10.tar.gz).
+   Install the software running `./autogen.sh && ./configure && make && sudo 
+   make install`.
+ * `omni_config`: this is the config file used by `omni`. You need to change 
+   the path to the users public key (`keys = ~/src/ansible-poprow`) to match 
+   the path were you cloned this repo.
+ * `ssh config files`: this is the `ssh` config file template that you have 
+   to modify.
+ * `gen-rspec.py`: this script generates an `.rspec` `./resource-parser.py -t twist -n nuc4,nuc11`
+ * `reserve.py`: this script reserves the resources on the chosen testbed `./reserve.py -t twist -d 3 -n testconfig -f test411.rspec`
+
 ## Automatic Nodes Setup
 
 The repository includes some `ansible` playbooks that are used to automatically

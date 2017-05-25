@@ -1,0 +1,22 @@
+[omni]
+default_cf = iminds
+users = segata,nfacchi
+
+[iminds]
+type=pg
+ch = https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/geni-ma
+sa = https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/sa
+cert = ~/.ssh/twist.cert
+key = ~/.ssh/twist.prk
+
+[segata]
+urn = urn:publicid:IDN+wall2.ilabt.iminds.be+user+segata
+keys = ~/src/ansible-poprow/segata.pub
+
+[nfacchi]
+urn = urn:publicid:IDN+wall2.ilabt.iminds.be+user+nfacchi
+keys = ~/src/ansible-poprow/nfacchi.pub
+
+[aggregate_nicknames]
+twist=,https://api.twist.tu-berlin.de:8001
+wilab=,https://www.wilab1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0
