@@ -1,21 +1,212 @@
 POPROW Scripts Repo
 ===
 
-## Testbed Resource Allocation
+# Testbed Resource Allocation
 
- * `omni`: this is a tools that is required to perform operations on the 
-   testbeds, such as creating experiments and allocating resources. Download 
-   the sources from
-   [here](http://software.geni.net/local-sw/download&software=gcf-2.10.tar.gz).
-   Install the software running `./autogen.sh && ./configure && make && sudo 
-   make install`.
- * `omni_config`: this is the config file used by `omni`. You need to change 
-   the path to the users public key (`keys = ~/src/ansible-poprow`) to match 
-   the path were you cloned this repo.
- * `ssh config files`: this is the `ssh` config file template that you have 
-   to modify.
- * `gen-rspec.py`: this script generates an `.rspec` `./resource-parser.py -t twist -n nuc4,nuc11`
- * `reserve.py`: this script reserves the resources on the chosen testbed `./reserve.py -t twist -d 3 -n testconfig -f test411.rspec`
+This section summarizes the steps required for reserving resources on the remote
+testbeds. Currently the following testbeds are supported:
+[TWIST](https://www.twist.tu-berlin.de/) and
+[w.iLab1](http://doc.ilabt.iminds.be/ilabt-documentation/wilabfacility.html#w-ilab-1-setup).
+
+The instruction reported below have been tested on Ubuntu 16.04 LTS.
+
+## Omni tool
+
+The [Omni](https://github.com/GENI-NSF/geni-tools/wiki/Omni) command line tool is
+required to perform operations on the remote testbeds. Supported operations
+include querying for testbed status/available resources, allocating/releasing
+resources (slices) and creating/deleting experiments.
+
+### Omni software dependencies
+
+On ubuntu, in order to install the `omni`'s software dependencies run the
+following command:
+
+```
+sudo apt install python-m2crypto python-dateutil python-openssl libxmlsec1 \
+    xmlsec1 libxmlsec1-openssl libxmlsec1-dev autoconf
+```
+
+For other operating systems take a look at the official [wiki
+page](https://github.com/GENI-NSF/geni-tools/wiki/QuickStart#debian--ubuntu)
+
+### Omni installation
+
+In order to install `omni,` executes the following commands:
+
+```
+cd /tmp
+wget https://github.com/GENI-NSF/geni-tools/archive/v2.10.tar.gz -O gcf-2.10.tar.gz
+tar xvfz gcf-2.10.tar.gz
+cd geni-tools-2.10
+./autogen.sh
+./configure
+make
+sudo make install
+```
+
+Verify that `omni` has been installed correctly by executing `omni --version`.
+This command should print something that resembles the following:
+
+```
+omni: GENI Omni Command Line Aggregate Manager Tool Version 2.10
+Copyright (c) 2011-2015 Raytheon BBN Technologies
+```
+
+### Omni configuration file
+
+The `omni_config` file provided in this repository is a template of the `omni`
+configuration file. Before running any other `omni` command, this template file
+must be modified in order to adapt it to the local host environment.
+
+First of all, we assume that the user running the omni commands has a
+valid [iMinds Authority account](https://authority.ilabt.iminds.be/). We also
+assume that the user's public and private keys associated with the iMinds
+Authority account are located in ~/.ssh/twist.cert and ~/.ssh/twist.prk
+respectively (the private key MUST NOT be encrypted
+`openssl rsa -in ssl.key.secure -out ssl.key`).
+
+The users whose public keys will be installed on the testbed's nodes are listed
+(comma separated list) in the value of the `users` key in the `omni` section.
+For each user listed in the `users` key, there is a corresponding section (names
+as the user) containing the specific configuration for that particular user.
+For example, in the current template configuration file one of the user is
+`segata`, and the corresponding configuration section looks like this:
+
+```
+[segata]
+urn = urn:publicid:IDN+wall2.ilabt.iminds.be+user+segata
+keys = ~/src/ansible-poprow/segata.pub
+```
+
+The value of the field `keys` must be modified to point to the public key of the
+user `segata` (which is included in this repository as segata.pub). If we assume
+that this repository has been cloned in /home/poprow/poprow-scripts, then the
+keys value must be modified to look as follows:
+
+```
+keys = /home/poprow/poprow-scripts/segata.pub
+```
+
+This process must be repeated for each user listed in the `omni_config` file.
+
+In case you need to add a new user, these are the steps required: 1) append the
+new user name in the comma separated list of the `users` key in the `omni`
+section; 2) add the user public key to the repository; 3) add to the
+`omni_config` file a new section for the new user; 4) commit and push the new
+`omni_cinfig` template and the public key of the new user.
+
+
+## SSH Configuration files
+
+In order to be able to connect to the TWIST and w.iLab1 testbeds you must modify
+the corresponding ssh configuration files (`twist-ssh.cfg` and `wilab1-ssh.cfg`)
+and copy them in `~/.ssh/.`
+
+In `twist-ssh.cfg` you must modify the following values:
+
+* `IdentityFile` in sections `Host api.twist.tu-berlin.de` and
+  `Host tplink nuc` to point to your iMinds Authority account's public key.
+
+* `User` in section `Host tplink nuc` to match your user name.
+
+In `wilab1-ssh.cfg` you must modify the following values:
+
+* `IdentityFile` in sections `Host bastion.test.iminds.be` and `Host nuc` to
+  point to your iMinds Authority account's public key.
+
+* `User` in sections `Host bastion.test.iminds.be` and `Host nuc` to match your
+  user name.
+
+* `ProxyCommand` in section `Host nuc` to use your user name.
+
+
+## RSPEC generation
+
+RSPEC files (extension .rspec) are XML files that describes which nodes to
+allocate in a given testbed. For the TWIST and w.iLab1 testbeds the .rspec files
+can be generated automatically thanks to the `gen-rspec.py` script. The script
+supports the following command line parameters:
+
+* `-t` (`--testbed`): specifies which testbed the RSPEC will be generated for.
+  Use twist for the TWIST testbed and wilab for w.iLab1;
+
+* `-f` (`--filter`): comma separated list of node name prefixes. Only the
+  available nodes whose name starts with one of the specified prefixes are
+  inserted in the generated RSPEC. By default all the available nodes are used for
+  generating the RSPEC file.
+
+* `-n` (`--nodes`): comma separated list of node names. Only the available nodes
+  whose name is listed with the `-n` option are inserted in the RSPEC file. By
+  default all the available nodes are used. The `-n` option takes precedence over
+  `-f`.
+
+For example, an RSPEC containing all the available nodes in the TWIST testbed
+can be generated with the following command:
+
+```
+./gen-rspec.py -t twist > twist_all.rspec
+```
+
+Instead, an RSPEC containing all the nuc nodes in the TWIST testbed can be
+generated with the following command:
+
+```
+./gen-rspec.py -t twist -f nuc > twist_nuc.rspec
+```
+
+Finally, an RSPEC containing only nuc4 and nuc6 from the TWIST testbed can be
+generated with the following command:
+
+```
+./gen-rspec.py -t twist -n nuc4,nuc6 > twist_nuc_4_6.rspec
+```
+
+Note that, in any case, a node is inserted in the RSPEC only if it is available
+in the moment the `gen-rspec.py` command is executed. For this reason the
+suggested best practice is to execute `gen-rspec.py` just before allocating the
+resources using the `reserve.py` command.
+
+
+## Resource allocation
+
+The `reserve.py` command can be use to allocate nodes specified in an .rspec
+file and to release resources previously allocated. The command supports the
+following parameters:
+
+* `-t` (`--testbed`): specifies in which testbed to allocate the nodes. The
+  testbed specified here must match the testbed used in the .rspec file
+  specified with the parameter `-f`. Use twist for the TWIST testbed and wilab for
+  w.iLab1;
+
+* `-d` (`--duration`): it's an integer value that specifies how many hours the
+  nodes will be reserved for. The minimum value currently supported is 3.
+
+* `-s` (`--name`): specifies the name that identify the experiment. Every
+  experiment whose allocation time overlaps must have a unique name.
+
+* `-f` (`--rspec`): specifies the path to the .rspec file generated with the
+  `gen-rspec.py` command.
+
+By default `reserve.py` allocate the resources specified in the .rspec file. The
+same command can be used also to release previously allocated resources using
+the `-r` (`--release`) parameter.
+
+For example, an experiment called `poprowexp1` that allocates in the TWIST
+testbed the nodes specified in the file `twist_nuc_4_6.rspec` for 4 hours can be
+created with the following command:
+
+```
+./reserve.py -t twist -d 4 -n poprowexp1 -f twist_nuc_4_6.rspec
+```
+
+Instead, the resources allocated in `poprowexp1` can be released with the
+following command:
+
+```
+./reserve.py -t twist -n poprowexp1 -f twist_nuc_4_6.rspec -r
+```
+
 
 ## Automatic Nodes Setup
 
@@ -29,21 +220,27 @@ Before running the scripts you need to modify the following files
    default, the file includes all hosts from all testbeds. If you don't want to
    touch it, you can make a copy and the edit `ansible.cfg` and change the
    `inventory` field accordingly.
+ * `setenv.sh`: this file contains a few variables that specifies parameters
+   used by the `run` command and by the ansible playbooks. This file must be
+   modified for setting the correct master node and the ssh configuration file
+   used for accessing the testbed. The ansible master node is specified by the
+   variable `MASTER_NODE` and the ssh configuration file is specified by the
+   `CONFIG_FILE` variable. The `setenv.sh` file already contains a reference
+   example that shows how these variables can be set.
  * `run`: this works as a launcher for all ansible playbooks. Instead of
    typing `ansible-playbook playbook.yaml` you type `./run playbook.yaml`.
    This copies the content of the whole folder on the master node and
    launches the `ansible-playbook` on the master node, to avoid being blocked
-   by a firewall because of the many `ssh` connections. Before starting you
-   need to edit the file to choose the master node. This is done by editing
-   the `MASTER_NODE` variable. In addition, you need to edit the
-   `CONFIG_FILE` variable, which points to an `ssh` config file which tells
-   `ssh` how to properly reach the node.
+   by a firewall because of the many `ssh` connections.
  * `etchosts`: this file is copied to `/etc/hosts` for easy pings and for
    setting the IP address to a node depending on its hostname. Change this
    according to your needs.
 
 Once these steps are done, you are ready to setup the nodes:
 
+ * `rsync-master-node.sh`: copy all the required support files on the ansible
+   master node. In principle this command should be executed only once before
+   any other test.
  * `run copy-files.yaml`: copies the configuration scripts and other files to
     all nodes. By default the command runs ansible on the TWIST testbed. If you
     want to choose a different testbed (in your `hosts` file) use the `testbed`
@@ -61,6 +258,65 @@ Once these steps are done, you are ready to setup the nodes:
    For more information on the possible parameter values, see the next section.
    As for `copy-files.yaml`, you can choose a different testbed with the
    `testbed` parameter.
+
+## Ping Experiment
+
+The purpose of the ping experiment is to compute the transmission success rate
+between every pair of nodes for a given channel, transmission rate and
+transmission power. The ping experiment is executed by editing the
+`ping-experiments.csv` configuration file and by running the
+`run-ping-experiment.sh` script.
+
+Each line of the `ping-experiments.csv` configuration file specifies an
+experiment configuration and has the following format:
+
+```
+<rate>,<channel>,<tx power>,<# of tx packet>,<interval between each transmission>
+```
+
+for example, the following line:
+
+```
+6,1,2000,10,0.2
+```
+
+describe an experiment where every node will transmit 10 frames (one every
+200ms) on channel 1 using 6Mb/s and a transmission power of 20 dBm.
+
+the `run-ping-experiment.sh` script will execute an experiment for each line of
+the `ping-experiments.csv` configuration file. For each experiment the following
+steps are executed:
+
+* The nodes Wi-Fi interfaces are configured in ad-hoc mode for using the
+  channel, tx rate and tx power specified in the configuration file.
+
+* On all the nodes the receiver `pop-recv.py` is executed in background and
+  configured to log information about the received transmissions.
+
+* On each node in turn the transmitter `pop-ping.py` is executed and configured
+  for transmitting the number of packets separated by the time interval
+  specified in the configuration file.
+
+* The receiver `pop-recv.py` is stopped on all nodes.
+
+* The ansible master node collects all the logs of `pop-recv.py` from all the
+  nodes and saves them in the results directory.
+
+* The results directory is rsync-ed with the local node.
+
+For example, given a configuration file with the following content:
+
+```
+6,1,2000,10,0.2
+9,1,2000,10,0.2
+```
+
+the ping experiment can be executed on the TWIST testbed with the following
+command:
+
+```
+./run-ping-experiment.sh twist
+```
 
 ## Wi-Fi Network Interface Configuration
 
