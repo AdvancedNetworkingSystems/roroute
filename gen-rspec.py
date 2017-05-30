@@ -15,6 +15,7 @@ def matches(name, filters, nodes):
             return True
     return False
 
+
 parser = ArgumentParser()
 parser.add_argument("-t", "--testbed", dest="testbed",
                     default="twist", action="store", metavar="TESTBED",
@@ -31,8 +32,15 @@ parser.add_argument("-n", "--nodes", dest="nodes",
 args = parser.parse_args()
 
 testbed = args.testbed
-filters = args.filter.split(",")
-nodes = args.nodes.split(",")
+if args.filter:
+    filters = args.filter.split(",")
+else:
+    filters = []
+
+if args.nodes:
+    nodes = args.nodes.split(",")
+else:
+    nodes = []
 
 omni = ["omni", "-V3", "listresources", "-a", testbed, "--error", "--tostdout"]
 
