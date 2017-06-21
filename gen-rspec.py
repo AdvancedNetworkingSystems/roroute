@@ -29,6 +29,10 @@ parser.add_argument("-n", "--nodes", dest="nodes",
                     help="Comma separated list of nodes [default: %("
                          "default)s] This argument has precedence over "
                          "--filter")
+parser.add_argument("-d", "--dump", dest="dump",
+                    default="", action="store", metavar="FILENAME",
+                    help="Output file where to store the list of available "
+                         "nodes. If not specified, no file will be written")
 args = parser.parse_args()
 
 testbed = args.testbed
@@ -41,6 +45,8 @@ if args.nodes:
     nodes = args.nodes.split(",")
 else:
     nodes = []
+
+dump_file = args.dump
 
 omni = ["omni", "-V3", "listresources", "-a", testbed, "--error", "--tostdout"]
 
@@ -62,6 +68,9 @@ w = 120
 xs = 100
 ys = 100
 
+if dump_file != "":
+    df = open(dump_file, "w")
+
 n = 0
 print(t.header_template)
 for node in e.findall('node'):
@@ -82,6 +91,8 @@ for node in e.findall('node'):
     if available and matches(name, filters, nodes):
         print(t.node_template %
               (name, component_id, xs + col * w, ys + row * h))
+        if dump_file != "":
+            df.write("%s\n" % name)
         n += 1
     # sys.stdout.write("Node: %s (%savailable) (%s)" %
     #                  (name, "" if available else "not", component_id))
@@ -89,3 +100,6 @@ for node in e.findall('node'):
     #     sys.stdout.write(" Position x=%f, y=%f, z=%f" % (x, y, z))
     # sys.stdout.write("\n")
 print(t.footer_template)
+
+if dump_file != "":
+    df.close()
