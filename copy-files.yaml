@@ -5,7 +5,7 @@
     set_fact:
       home_dir: "{{ lookup('env', 'HOME') }}"
   - name: archive file
-    local_action: command tar -C "{{ home_dir }}/ansible" -czf /tmp/files.bzip pop-ping.py pop-recv.py poprow_setup_interface.py setup-devices.sh setup-interfaces.sh setup-olsr.sh copy-etchosts.sh etchosts start-pop-recv.sh start-pop-ping.sh kill-pop-recv.sh oonf-init-scripts_2016-05-31_ar71xx.ipk oonf-olsrd2-git_2016-05-31_ar71xx.ipk olsrd2.conf olsrd2.service start-olsr.sh
+    local_action: command tar -C "{{ home_dir }}/ansible" -czf /tmp/files.bzip pop-ping.py pop-recv.py poprow_setup_interface.py setup-devices.sh setup-interfaces.sh setup-olsr.sh copy-etchosts.sh etchosts start-pop-recv.sh start-pop-ping.sh kill-pop-recv.sh oonf-init-scripts_2016-05-31_ar71xx.ipk oonf-olsrd2-git_2016-05-31_ar71xx.ipk olsrd2.conf olsrd2.service start-olsr.sh start-olsr.yaml
   - unarchive:
       src: "/tmp/files.bzip"
       dest: "{{ ansible_env.HOME }}/"
