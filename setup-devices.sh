@@ -22,3 +22,6 @@ ${SUDO} pip install pyric pyroute2 ipaddr
 if [ $tplink -eq 1 ]; then
 	sed -i -e "s/'sys/'\/sys/g" /usr/lib/python2.7/site-packages/pyric/utils/rfkill.py
 fi
+
+# install olsrd2
+./setup-olsr.sh
