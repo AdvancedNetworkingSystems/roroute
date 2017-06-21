@@ -207,6 +207,10 @@ following command:
 ./reserve.py -t twist -n poprowexp1 -f twist_nuc_4_6.rspec -r
 ```
 
+The command queries for the status of the testbed every 10 seconds, and reports
+when everything is up and running. For large testbeds, e.g., the whole TWIST,
+you might need to wait a lot because of the TP-Link devices. As an example, one
+attempt to reserve the whole testbed took roughly one hour.
 
 ## Automatic Nodes Setup
 
