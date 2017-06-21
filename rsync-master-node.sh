@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-source setenv.sh
+if [ $# -eq 1 ]; then
+	testbed="$1"
+else
+	testbed="twist"
+fi
+
+. ./setenv.sh $testbed
 
 ANSIBLE_FOLDER=${HOME_FOLDER}/ansible/
 

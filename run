@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
-source setenv.sh
+testbed_exists=`echo $@ | grep testbed`
+if [ "$testbed_exists" == "" ]; then
+	testbed="twist"
+else
+	testbed=`echo $@ | sed -e "s/^.*testbed=\([a-zA-Z0-9]\+\).*$/\1/g"`
+fi
+
+. ./setenv.sh $testbed
 
 if [ $# -ge 1 ]; then
 	playbook=$1

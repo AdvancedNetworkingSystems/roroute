@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-source setenv.sh
-
 if [ $# -eq 1 ]; then
 	testbed=$1
 else
 	testbed="twist"
 fi
+
+. ./setenv.sh $testbed
 
 for conf in `cat ping-experiments.csv`
 do
@@ -17,6 +17,8 @@ do
 	int=`echo $conf | cut -d',' -f 5`
 	./run setup-interfaces.yaml "rate=${rate} channel=${channel} power=${power} testbed=${testbed}"
 	./run start-pop-recv.yaml "testbed=${testbed}"
+	# wait a few second to ensure network startup. otherwise results might be wrong
+	sleep 5
 	./run start-pop-ping.yaml "n=${n} int=${int} testbed=${testbed}"
 	./run kill-pop-recv.yaml "testbed=${testbed}"
 	./run fetch-experiment-data.yaml "rate=${rate} channel=${channel} power=${power} n=${n} int=${int} testbed=${testbed}"

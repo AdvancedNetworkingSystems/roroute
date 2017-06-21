@@ -224,13 +224,15 @@ Before running the scripts you need to modify the following files
    default, the file includes all hosts from all testbeds. If you don't want to
    touch it, you can make a copy and the edit `ansible.cfg` and change the
    `inventory` field accordingly.
- * `setenv.sh`: this file contains a few variables that specifies parameters
-   used by the `run` command and by the ansible playbooks. This file must be
-   modified for setting the correct master node and the ssh configuration file
-   used for accessing the testbed. The ansible master node is specified by the
-   variable `MASTER_NODE` and the ssh configuration file is specified by the
-   `CONFIG_FILE` variable. The `setenv.sh` file already contains a reference
-   example that shows how these variables can be set.
+ * `setenv.sh`: this file sets up environment variables that specifies
+   parameters used by the `run` command and by the ansible playbooks. In
+   particular it sets the master node (the node of the testbed that runs
+   `ansible` playbooks) and the `ssh` configuration file to be used. By
+   default it sets the node `nuc0-43` as the master node for the `wilab1`
+   testbed and `nuc4` for the `twist` testbed. If you want to use different
+   master nodes you need to change this file. The ansible master node is
+   specified by the variable `MASTER_NODE` and the ssh configuration file is
+   specified by the `CONFIG_FILE` variable.
  * `run`: this works as a launcher for all ansible playbooks. Instead of
    typing `ansible-playbook playbook.yaml` you type `./run playbook.yaml`.
    This copies the content of the whole folder on the master node and
@@ -244,7 +246,9 @@ Once these steps are done, you are ready to setup the nodes:
 
  * `rsync-master-node.sh`: copy all the required support files on the ansible
    master node. In principle this command should be executed only once before
-   any other test.
+   any other test. The script accepts one parameter, which is the testbed.
+   This is used to decide which master node to use. Accepted values are
+   `twist` (the default if nothing is specified) or `wilab`.
  * `run copy-files.yaml`: copies the configuration scripts and other files to
     all nodes. By default the command runs ansible on the TWIST testbed. If you
     want to choose a different testbed (in your `hosts` file) use the `testbed`
@@ -269,7 +273,9 @@ The purpose of the ping experiment is to compute the transmission success rate
 between every pair of nodes for a given channel, transmission rate and
 transmission power. The ping experiment is executed by editing the
 `ping-experiments.csv` configuration file and by running the
-`run-ping-experiment.sh` script.
+`run-ping-experiment.sh` script. The script accepts one parameter, which is
+the testbed name. Accepted values are `twist` (the default if nothing is
+specified) or `wilab`.
 
 Each line of the `ping-experiments.csv` configuration file specifies an
 experiment configuration and has the following format:
