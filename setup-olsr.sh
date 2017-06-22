@@ -7,8 +7,8 @@ if [ -z "$opkg_path" ]; then
 
 	if [ ! -d OONF ]; then
 		git clone https://github.com/OLSR/OONF.git
-		git checkout 88b68eef207bc76e448bf4237da09180514f7a2d
 		cd OONF
+		git checkout 88b68eef207bc76e448bf4237da09180514f7a2d
 		mkdir -p build
 		cd build
 		cmake ..
