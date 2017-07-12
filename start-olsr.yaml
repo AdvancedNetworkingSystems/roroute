@@ -2,6 +2,6 @@
 - hosts: "{{ testbed | default('twist') }}"
   tasks:
   - name: start olsrd2
-    command: "/usr/bin/env sh start-olsr.sh "
+    command: "/usr/bin/env sh start-olsr.sh {{ testbed }}"
     args:
       chdir: "{{ ansible_env.HOME }}"
