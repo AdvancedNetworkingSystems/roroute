@@ -1,0 +1,7 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: stop olsrd2
+    command: "/usr/bin/env sh stop-olsr.sh"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
