@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+if [ $# -ne 4 ]; then
+	echo "Usage $0 <start time (unix seconds)> <stop time (unix seconds)> <interval (ms)> <prefix>"
+	exit 1
+fi
+
+opkg_path=`which opkg`
+if [ -z "$opkg_path" ]; then
+	host_name=`hostname | cut -d'.' -f 1`
+else
+	host_name=`uci get system.@system[0].hostname`
+fi
+
+mkdir -p $4
+cd $4
+echo topology_dumper $1 $2 $3 $4_$host_name | at now

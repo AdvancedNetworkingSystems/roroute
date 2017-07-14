@@ -15,6 +15,15 @@ if [ $tplink -eq 1 ]; then
 else
 	sudo apt-get install -y python python-pip
 	sudo pip install setuptools
+	cd olsr_utilities
+	make clean; make
+	sudo rm -f /usr/bin/topology_dumper
+	sudo rm -f /usr/bin/start_topology_dumper
+	sudo rm -f /usr/bin/runat
+	sudo ln -s $PWD/topology_dumper /usr/bin/topology_dumper
+	sudo ln -s $PWD/start_topology_dumper /usr/bin/start_topology_dumper
+	sudo ln -s $PWD/runat /usr/bin/runat
+	cd ../
 fi
 ${SUDO} pip install pyric pyroute2 ipaddr
 
