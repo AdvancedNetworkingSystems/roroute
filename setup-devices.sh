@@ -15,6 +15,7 @@ if [ $tplink -eq 1 ]; then
 else
 	sudo apt-get install -y python python-pip
 	sudo pip install setuptools
+	sudo service ntp start
 	cd olsr_utilities
 	make clean; make
 	sudo rm -f /usr/bin/topology_dumper
