@@ -1,0 +1,15 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set start time
+    set_fact:
+      start: "0"
+  - name: set kill times
+    set_fact:
+      nodes: ""
+  - name: kill olsr
+    command: "/usr/bin/env sh kill_myolsr.sh {{ start }} {{ nodes }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
+
+
