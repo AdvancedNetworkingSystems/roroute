@@ -1,0 +1,7 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: stop prince
+    command: "/usr/bin/env sh stop-prince.sh"
+    args:
+      chdir: "{{ ansible_env.HOME }}"

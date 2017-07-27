@@ -1,0 +1,23 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set start time
+    set_fact:
+      start: "0"
+  - name: set stop time
+    set_fact:
+      stop: "0"
+  - name: set prefix
+    set_fact:
+      prefix: "exp"
+  - name: set interval
+    set_fact:
+      interval: "100"
+  - name: set working directory
+    set_fact:
+      workdir: ""
+  - name: start dumper
+    command: "start_topology_dumper {{ start }} {{ stop }} {{ interval }} {{ prefix }}"
+    args:
+      chdir: "{{ workdir }}"
+

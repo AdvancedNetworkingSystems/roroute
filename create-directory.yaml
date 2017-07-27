@@ -1,0 +1,14 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set directory name
+    set_fact:
+      dirname: ""
+  - name: Removing directory
+    file:
+      path: "{{ dirname }}"
+      state: absent
+  - name: Creating directory
+    file:
+      path: "{{ dirname }}"
+      state: directory

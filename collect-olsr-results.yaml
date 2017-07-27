@@ -1,0 +1,22 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set expname
+    set_fact:
+      expname: ""
+  - name: remove results directory
+    local_action: command rm -rf "{{ ansible_env.HOME }}/{{ expname }}_results"
+    args:
+      warn: false
+  - name: create results directory
+    local_action: command mkdir -p "{{ ansible_env.HOME }}/{{ expname }}_results"
+    args:
+      warn: false
+  - name: archive results
+    shell: tar -czf "{{ ansible_env.HOME }}/{{ expname }}.tar.gz" "{{ ansible_env.HOME }}/{{ expname }}"
+    args:
+      warn: false
+  - fetch:
+      src: "{{ ansible_env.HOME }}/{{ expname }}.tar.gz"
+      dest: "{{ ansible_env.HOME }}/{{ expname }}_results/{{ inventory_hostname }}_{{ expname }}.tar.gz"
+      flat: yes

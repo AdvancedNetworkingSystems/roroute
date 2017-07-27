@@ -1,0 +1,10 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set prince configuration
+    set_fact:
+      prince_conf: "prince_conf_c_h.conf"
+  - name: start prince
+    command: "/usr/bin/env sh start-prince.sh {{ prince_conf }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
