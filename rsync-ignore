@@ -1,3 +1,4 @@
 results/
 .git/
 *.swp
+*_results/
