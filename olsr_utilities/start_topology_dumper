@@ -12,6 +12,4 @@ else
 	host_name=`uci get system.@system[0].hostname`
 fi
 
-mkdir -p $4
-cd $4
 echo topology_dumper $1 $2 $3 $4_$host_name | at now
