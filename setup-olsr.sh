@@ -18,8 +18,18 @@ if [ -z "$opkg_path" ]; then
 		sudo ln -s $PWD/olsrd2 /usr/sbin/olsrd2_dynamic
 		cd ../..
 	fi
-	sudo cp OONF/src/olsrd2/debian/olsrd2.init /etc/init.d/olsrd2
-	sudo cp OONF/src/olsrd2/debian/olsrd2.service /etc/systemd/system/
+
+	# In order to use the remotecontrol plugin (required for the config
+	# command) the olsrd2 service must call olsrd2_dynamic
+	cat OONF/src/olsrd2/debian/olsrd2.init | sed \
+		-e 's/^DAEMON=.*$/DAEMON=\/usr\/bin\/olsrd2_dynamic/' > \
+		/tmp/olsrd2.init
+	sudo cp /tmp/olsrd2.init /etc/init.d/olsrd2
+
+	cat OONF/src/olsrd2/debian/olsrd2.service | sed \
+		-e 's/\(^.*\)olsrd2_static\(.*$\)/\1olsrd2_dynamic\2/' > \
+		/tmp/olsrd2.service
+	sudo cp /tmp/olsrd2.service /etc/systemd/system/
 	sudo mkdir -p /etc/olsrd2/
 	sudo cp olsrd2.conf /etc/olsrd2/
 	sudo /bin/systemctl daemon-reload
