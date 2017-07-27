@@ -26,7 +26,7 @@ else
 	sudo ln -s $PWD/runat /usr/bin/runat
 	cd ../
 fi
-${SUDO} pip install pyric pyroute2 ipaddr
+${SUDO} pip install pyric pyroute2 ipaddr networkx
 
 # patch a mistake in the official release of pyric
 if [ $tplink -eq 1 ]; then
@@ -35,3 +35,6 @@ fi
 
 # install olsrd2
 ./setup-olsr.sh
+
+# install Prince
+./setup-prince.sh
