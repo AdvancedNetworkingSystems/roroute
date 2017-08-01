@@ -403,7 +403,9 @@ run_remote_olsr_experiment.sh <testbed> \
                                 <legacy_rate> \
                                 <txpower> \
                                 <strategy_name> \
+                                <graph_type> \
                                 <expname> \
+                                <resultsdir> \
                                 <verbose (True|False)> \
                                 <fetch_results (True|False)>"
 ```
@@ -426,25 +428,36 @@ where:
   nodes. For details see the dedicated Section "Stretegies for stopping/starting
   nodes".
 
+* `graph_type`: the type of graph that will be created by deploying the proper
+  firewall rules on the nodes of the testbed. Currently the only graph type
+  supported is `powerlaw`.
+
 * `expname`: the name that identifies the experiment. This name is also used
   for creating the directories used for saving the results of the experiment. In
   particular, on each node involved in the experiment will be created the
   directory `${HOME}/expname`. This directory, in turn, can potentailly contains
   multiple sub-directories based on what `strategy_name` has been used. At the end
   of the experiment, on the ansible master node, a directory called
-  `${HOME}/expname_results` will be created. This directory will contain an
+  `<resultsdir>/expname_results` will be created. This directory will contain an
   archive of the experiment results for ech node involved in the experiment. The
   archives are named using the following format: `node_name_expname.tar.gz`.
   node_name_expname.tar.gz containing,
+
+* `resultsdir`: the full path base directory on the ansible master node where
+  all the results will be collected at the end of the experiment. The user must
+  select a directory mounted on a partition with enough space for storing the
+  results of the esperiments (several GB). For example, on the w.ilab1 testbed
+  there is a shared partition mounted in `/proj/wall2-ilabt-iminds-be` that can be
+  used for this purpose.
 
 * `verbose`: when this parameter is set to `True` the experiment controller will
   produce a more verbose output.
 
 * `fetch_results`: when this parameter is set to `True` the directory
-  `${HOME}/expname_results` created on the ansible master node will be
+  `<resultsdir>/expname_results` created on the ansible master node will be
   transferred on the local host in the current directory. Note that, independently
-  from the value of this parameter, the directory `${HOME}/expname_results` on the
-  ansible master node is always created.
+  from the value of this parameter, the directory `<resultsdir>/expname_results`
+  on the ansible master node is always created.
 
 The experiment controller (`olsr_experiment_controller.py`), running on the
 ansible master node, performs the following steps (except for the first and last
@@ -569,7 +582,9 @@ Let's consider the following command:
                                 6 \
                                 2000 \
                                 two_node_stop_1s_start_61s_2mostcentral \
+                                powerlaw \
                                 test_experiment \
+                                /proj/wall2-ilabt-iminds-be/exp/olsrprince1/ \
                                 True \
                                 False
 ```
@@ -582,9 +597,10 @@ OLSR+Prince) where the stop/restart strategy defined by
 `two_node_stop_1s_start_61s_2mostcentral` will be used: the two most central
 nodes of the mesh network will be stopped after 1 second and restarted after 61
 seconds. At the end of the experiment the directory
-`${HOME}/test_experiment_results` containing all the results of all the nodes
-will be created on the ansible master nodes but will not be transferred on the
-local host. Finally, the experiment controller will produce a verbose output.
+`/proj/wall2-ilabt-iminds-be/exp/olsrprince1//test_experiment_results`
+containing all the results of all the nodes will be created on the ansible
+master nodes but will not be transferred on the local host. Finally, the
+experiment controller will produce a verbose output.
 
 ## Wi-Fi Network Interface Configuration
 
