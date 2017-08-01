@@ -24,7 +24,6 @@
 import networkx as nx
 import sys
 import scipy.sparse as sp
-import matplotlib.pyplot as plt
 
 
 def __get_matrix(m, mapping):
@@ -198,6 +197,9 @@ def get_firewall_rules(graph, generator_string, display=False):
     score = __matching_score(experiment_matrix, synt_matrix)
 
     if display:
+        # do this heretic thing to avoid installing matplotlib on testbed
+        # nodes if not really required
+        import matplotlib.pyplot as plt
         experiment_g = nx.from_scipy_sparse_matrix(experiment_matrix)
         nx.draw_circular(synt_g)
         nx.draw_circular(experiment_g, width=3, edge_color='r')
