@@ -1,0 +1,9 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: flush firewall rules
+    command: "/usr/bin/env sh flush_firewall_rules.sh {{ testbed }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
+
+

@@ -1,0 +1,12 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set nodes string
+    set_fact:
+      rules: ""
+  - name: deploy firewall rules
+    command: "/usr/bin/env sh set_firewall_rules.sh {{ testbed }} {{ rules }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
+
+
