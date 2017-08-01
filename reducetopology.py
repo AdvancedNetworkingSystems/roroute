@@ -18,9 +18,7 @@
 # 02110-1301, USA.
 #
 # Example usage:
-# rules, score = get_firewall_rules("graph.graphml",
-#                                   getattr(nx, "random_regular_graph"),
-#                                   {"d": 4, "seed": 0})
+# rules, score = get_firewall_rules(G, "random_regular_graph:d=4;seed=0")
 #
 
 import networkx as nx
@@ -135,7 +133,7 @@ def print_matrix(m, mapping=None):
         sys.stdout.write("\n")
 
 
-def get_firewall_rules(graph, generator, gen_args, display=False):
+def get_firewall_rules(graph, generator_string, display=False):
     """
     Given a networkx graph representing the real topology of a testbed, returns
     the firewall rules to be applied to obtain a synthetic topology with the
@@ -145,11 +143,15 @@ def get_firewall_rules(graph, generator, gen_args, display=False):
     can be transformed to completely match the synthetic graph. A score of 0
     indicates that no link can be matched
     :param graph: networkx graph
-    :param generator: a networkx function name (e.g., "random_regular_graph")
-    that accepts the parameter n as the number of nodes, plus additional
-    parameters, that generates a networkx graph
-    :param gen_args: additional parameters (except the number of nodes n) to be
-    passed to the generator
+    :param generator_string: a networkx function name (e.g.,
+    "random_regular_graph") with the list of parameters. The generator
+    function must accept the parameter n as the number of nodes, plus
+    the additional parameters, and generate a networkx graph. The format of
+    the string is like
+    "generator_function_name:p1=v1;p2=v2;..."
+    where p1 and p2 are the argument names and v1 and v2 their respective
+    values. The arguments should not include the parameter n, which is
+    automatically obtained from the given graph
     :param display: if set to True, shows a plot with the overlapping desired
     topology and the experiment topology, for a graphical comparison of the two
     :return: a pair where the first element is the firewall configuration of
@@ -176,8 +178,11 @@ def get_firewall_rules(graph, generator, gen_args, display=False):
     testbed_sm = [mp[testbed_sd[i]] for i in range(len(testbed_sd))]
     testbed_matrix = __get_matrix(testbed_am, testbed_sm)
 
+    generator, parameters = generator_string.split(":")
+    gen_args = dict((p.split("=")[0], eval(p.split("=")[1])) for p in
+                    parameters.split(";"))
     # create a synthetic graph by calling the given generator
-    synt_g = generator(n=n_nodes, **gen_args)
+    synt_g = getattr(nx, generator)(n=n_nodes, **gen_args)
     synt_am = nx.adj_matrix(synt_g)
     synt_d = synt_g.degree()
     # sort by degree as for the real graph
