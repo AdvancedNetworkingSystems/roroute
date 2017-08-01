@@ -18,7 +18,7 @@
 # 02110-1301, USA.
 #
 # Example usage:
-# rules, score = get_firewall_rules(G, "random_regular_graph:d=4;seed=0")
+# rules, score = get_firewall_rules(G, "random_regular_graph:d=4,seed=0")
 #
 
 import networkx as nx
@@ -147,7 +147,7 @@ def get_firewall_rules(graph, generator_string, display=False):
     function must accept the parameter n as the number of nodes, plus
     the additional parameters, and generate a networkx graph. The format of
     the string is like
-    "generator_function_name:p1=v1;p2=v2;..."
+    "generator_function_name:p1=v1,p2=v2,..."
     where p1 and p2 are the argument names and v1 and v2 their respective
     values. The arguments should not include the parameter n, which is
     automatically obtained from the given graph
@@ -179,7 +179,7 @@ def get_firewall_rules(graph, generator_string, display=False):
 
     generator, parameters = generator_string.split(":")
     gen_args = dict((p.split("=")[0], eval(p.split("=")[1])) for p in
-                    parameters.split(";"))
+                    parameters.split(","))
     # create a synthetic graph by calling the given generator
     synt_g = getattr(nx, generator)(n=n_nodes, **gen_args)
     synt_am = nx.adj_matrix(synt_g)
