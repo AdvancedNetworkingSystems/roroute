@@ -29,6 +29,7 @@ import json
 from os.path import expanduser
 from collections import Counter
 import networkx as nx
+import reducetopology
 
 
 def create_directory(dirname, testbed):
@@ -133,6 +134,105 @@ def dump_olsr_topology():
             sys.stdout.flush()
 
 
+def dump_olsr_routing_table():
+    '''
+    Use the netjsoninfo command for dumping the olsrd2 routing table and
+    return the corresponding json
+    '''
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(('127.0.0.1', 2009))
+    message = '/netjsoninfo filter route ipv4_0/quit\n'
+
+    client_socket.send(message)
+
+    routing_table_str = ''
+
+    while True:
+        try:
+            data = client_socket.recv(1024)
+            if not data:
+                client_socket.close()
+                return json.loads(routing_table_str)
+
+            routing_table_str += data
+        except socket.timeout:
+            print("Topology request timed out. Keep trying")
+            sys.stdout.flush()
+
+
+# Compares the shortest paths in g1 and in g2.
+# Returns True or False if the shortest paths match or not
+def compare_shortest_paths(g1, g2):
+    n1sorted = sorted(g1.nodes())
+    n2sorted = sorted(g2.nodes())
+    sp_match = True
+
+    # The two graphs must have the same nodes
+    if n1sorted == n2sorted:
+        sp1_dict = nx.all_pairs_dijkstra_path(g1)
+        sp2_dict = nx.all_pairs_dijkstra_path(g2)
+
+        for source_node in sp1_dict.keys():
+            sp1 = sp1_dict[source_node]
+            sp2 = sp2_dict[source_node]
+
+            if not (set(sp1.keys()) - set(sp2.keys())):
+                for dest_node in sp1.keys():
+                    if not (sp1[dest_node] == sp2[dest_node]):
+                        sp_match = False
+                        if verbose:
+                            print('%s -> %s:' % (source_node, dest_node))
+                            path_list1 = sp1[dest_node]
+                            w1 = 0
+                            for i in range(1, len(path_list1)):
+                                w1 += g1.get_edge_data(path_list1[i-1],
+                                                       path_list1[i])['weight']
+                            print('Previous: %s, cost: %f' %
+                                  (path_list1, w1))
+                            path_list2 = sp2[dest_node]
+                            w1 = 0
+                            w2 = 0
+                            for i in range(1, len(path_list2)):
+                                w2 += g2.get_edge_data(path_list2[i-1],
+                                                       path_list2[i])['weight']
+                            for i in range(1, len(path_list1)):
+                                edata = g2.get_edge_data(path_list1[i-1],
+                                                         path_list1[i])
+                                if edata is None:
+                                    print('Missing edge %s %s' %
+                                          (path_list1[i-1],
+                                           path_list1[i]))
+                                    break
+                                else:
+                                    w1 += edata['weight']
+                            print('Previous on current: %s, cost: %f' %
+                                  (path_list1, w1))
+
+                            print('Current: %s, cost: %f' %
+                                  (path_list2, w2))
+
+            else:
+                sp_match = False
+
+            if not sp_match:
+                break
+
+    else:
+        sp_match = False
+
+    return sp_match
+
+
+# compare two routing tables defined as a set containing set of pairs:
+# (destination_ip, next_hop_ip)
+def compare_routing_table(rt1, rt2):
+    if rt1 == rt2:
+        return True
+    else:
+        print(rt1.symmetric_difference(rt2))
+        return False
+
+
 def wait_for_stable_topology():
     '''
     Request (dump_olsr_topology) the olsrd2 topology every second and compare
@@ -154,13 +254,14 @@ def wait_for_stable_topology():
     # power) then the olsrd2 topology stabilizes.
 
     previous_graph = None
+    previous_routing_table = None
     # After max_attempts without reaching stability we raise an exception
     attempts_counter = 0
     max_attempts = 120
     # When stability_counter reaches stability_threshold we consider the
     # topology stable
     stability_counter = 0
-    stability_threshold = 10
+    stability_threshold = 20
 
     while attempts_counter <= max_attempts:
         # Obtain topology from olsrd2 daemon
@@ -170,6 +271,7 @@ def wait_for_stable_topology():
             print('Asking topology to olsrd2')
             sys.stdout.flush()
         topology_json = dump_olsr_topology()
+        routing_table_json = dump_olsr_routing_table()
 
         # Build the current graph from olsrd2 topology
         current_graph = nx.Graph()
@@ -178,7 +280,15 @@ def wait_for_stable_topology():
             current_graph.add_node(n['id'])
 
         for l in topology_json['links']:
-            current_graph.add_edge(l['source'], l['target'])
+            lcost = float(l['cost_text'].replace('bit/s', ''))
+            # lcost = float(l['cost'])
+            current_graph.add_edge(l['source'], l['target'], weight=lcost)
+
+        # build the current routing table set
+        current_routing_table = set()
+        for r in routing_table_json['route']:
+            current_routing_table.add((r['destination'],
+                                      r['next']))
 
         # We skip this for the first iteration because we don't have a previous
         # graph
@@ -194,6 +304,12 @@ def wait_for_stable_topology():
                     sys.stdout.flush()
                 graphs_diff1 = nx.difference(previous_graph, current_graph)
                 graphs_diff2 = nx.difference(current_graph, previous_graph)
+                # graphs_diff1 = previous_graph.copy()
+                # graphs_diff1 = graphs_diff1.remove_nodes_from(
+                #     n for n in previous_graph if n in current_graph)
+                # graphs_diff2 = current_graph.copy()
+                # graphs_diff2 = graphs_diff2.remove_nodes_from(
+                #     n for n in current_graph if n in previous_graph)
 
                 # and if current and previous graph have the same edges
                 if len(graphs_diff1.edges()) == 0 \
@@ -203,8 +319,16 @@ def wait_for_stable_topology():
                               'edges')
                         print('Previous and current graphs are the same')
                         sys.stdout.flush()
-                    graph_changed = False
-                    stability_counter += 1
+
+                    if compare_shortest_paths(previous_graph, current_graph):
+                        graph_changed = False
+                        stability_counter += 1
+                        print('Previous and current graphs have the same '
+                              'shortest paths')
+                    else:
+                        print('Previous and current graphs have different '
+                              'shortest paths')
+                    sys.stdout.flush()
 
                     if verbose:
                         print('stability_counter = %d' % (stability_counter,))
@@ -221,6 +345,30 @@ def wait_for_stable_topology():
                     print(graphs_diff2.edges())
                     print("Edges in previous graph but not in current one")
                     print(graphs_diff1.edges())
+
+                    if compare_shortest_paths(previous_graph, current_graph):
+                        graph_changed = False
+                        stability_counter += 1
+                        print('Previous and current graphs have the same '
+                              'shortest paths')
+
+                        if verbose:
+                            print('stability_counter = %d' %
+                                  (stability_counter,))
+                            sys.stdout.flush()
+
+                        if stability_counter == stability_threshold:
+                            # At this point we assume the topology is stable
+                            if verbose:
+                                print('Topology is stable')
+                                sys.stdout.flush()
+                            return (current_graph, True)
+
+                    else:
+                        print('Previous and current graphs have different '
+                              'shortest paths')
+                    sys.stdout.flush()
+
             else:
                 print(nodes_previous)
                 print(nodes_current)
@@ -228,14 +376,34 @@ def wait_for_stable_topology():
             # If the current graph changed wrt the previous one we reset the
             # stability_counter.
             if graph_changed:
-                if verbose:
-                    print('Topology changed wrt previous iteration')
-                    sys.stdout.flush()
-                stability_counter = 0
+                # As a last hope we compare the current routing table on the
+                # master node with the previous one
+                if compare_routing_table(previous_routing_table,
+                                         current_routing_table):
+                    print('Routing table on master node haven\'t changed')
+
+                    stability_counter += 1
+
+                    if verbose:
+                        print('stability_counter = %d' % (stability_counter,))
+                        sys.stdout.flush()
+
+                    if stability_counter == stability_threshold:
+                        # At this point we assume the topology is stable
+                        if verbose:
+                            print('Topology is stable')
+                            sys.stdout.flush()
+                        return (current_graph, True)
+                else:
+                    if verbose:
+                        print('Topology changed wrt previous iteration')
+                        sys.stdout.flush()
+                    stability_counter = 0
 
         attempts_counter += 1
 
         previous_graph = current_graph
+        previous_routing_table = current_routing_table
         time.sleep(1)
 
     return (current_graph, False)
@@ -377,6 +545,130 @@ def two_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
     return (ret_stop_strategy_list, ret_start_strategy_list)
 
 
+# This function is called before beginning the actual experiment with the
+# purpose of computing the most dense mesh network possible and deploy the
+# proper firewall rules for obtaining a graph of type graph_type
+def preliminary_net_setup_for_firewall_rules_deployment(testbed,
+                                                        rate,
+                                                        channel,
+                                                        power,
+                                                        graph_params):
+
+    #######################################################################
+    # Flush firewall rules
+    print("Flush firewall rules")
+    sys.stdout.flush()
+    flush_cmd = 'ansible-playbook flush-firewall-rules.yaml ' +\
+                '--extra-vars ' +\
+                '"testbed=' + testbed + '"'
+
+    if verbose:
+        print(flush_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(flush_cmd)
+
+    #######################################################################
+    # Kill olsrd2 and prince as a clean up procedure
+    print("Killing prince")
+    sys.stdout.flush()
+    stop_prince_cmd = 'ansible-playbook stop-prince.yaml ' +\
+                      '--extra-vars ' +\
+                      '"testbed=' + testbed + '"'
+
+    if verbose:
+        print(stop_prince_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(stop_prince_cmd)
+
+    print("Killing olsr")
+    sys.stdout.flush()
+    stop_olsr_cmd = 'ansible-playbook stop-olsr.yaml ' +\
+                    '--extra-vars ' +\
+                    '"testbed=' + testbed + '"'
+
+    if verbose:
+        print(stop_olsr_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(stop_olsr_cmd)
+
+    #######################################################################
+    # Setup network interfaces
+    print("Setting up network interfaces")
+    setup_interfaces_cmd = 'ansible-playbook setup-interfaces.yaml ' +\
+                           '--extra-vars ' +\
+                           '"testbed=' + testbed + ' ' +\
+                           'rate=' + str(legacyrate) + ' ' +\
+                           'channel=' + str(channel) + ' ' +\
+                           'power=' + str(txpower) + '"'
+
+    if verbose:
+        print(setup_interfaces_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(setup_interfaces_cmd)
+
+    # TODO: check for possible errors of setup_interfaces_cmd
+
+    #######################################################################
+    # Start olsrd2
+    print("Starting olsrd2")
+    sys.stdout.flush()
+    start_olsr_cmd = 'ansible-playbook start-olsr.yaml ' +\
+                     '--extra-vars ' +\
+                     '"testbed=' + testbed + '"'
+
+    if verbose:
+        print(start_olsr_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(start_olsr_cmd)
+
+    # TODO: maybe here we should check that olsrd2 is really running on all
+    # the nodes.
+
+    #######################################################################
+    # Wait for olsr convergence
+    print("Sleep for 10 seconds...")
+    sys.stdout.flush()
+    time.sleep(10)
+    print("Wait for olsr topology convergence...")
+    current_graph, graph_stable = wait_for_stable_topology()
+
+    # if not graph_stable:
+    #    probably we should rise an exception
+
+    #######################################################################
+    # Call the proper function based on the graph_type parameter
+    # This function should return the string to pass to set-firewall-rules.yaml
+    # nodes_rules = graph_type(current_graph)
+    # nodes_rules = 'nuc0-20:nuc0-43,nuc0-21;nuc0-43:nuc0-20,nuc0-21'
+    # nodes_rules = '10.1.0.20:10.1.0.43;10.1.0.43:10.1.0.20'
+    nodes_rules, score = reducetopology.get_firewall_rules(current_graph,
+                                                           graph_params)
+
+    #######################################################################
+    # Deploy the actual firewall rules using set-firewall-rules.yaml
+    print("Setting firewall rules")
+    sys.stdout.flush()
+    firewall_cmd = 'ansible-playbook set-firewall-rules.yaml ' +\
+                   '--extra-vars ' +\
+                   '"testbed=' + testbed + ' ' +\
+                   'rules=' + nodes_rules + '"'
+
+    if verbose:
+        print(firewall_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(firewall_cmd)
+
+    #######################################################################
+    #  Probably we should wait again for convegence and then check if we
+    #  obtained the expected graph
+
+
 verbose = False
 strategy_functions = [
                     'stop_one_random_node_1s',
@@ -410,14 +702,26 @@ if __name__ == '__main__':
                              'decide which nodes to kill and when to kill '
                              'them',
                              required=True)
+    parser.add_argument('--graphparams', dest='graphparams',
+                        type=str,
+                        help='Graph type to create by deploying firewall '
+                             'rules',
+                        required=True)
     parser.add_argument('--testbed', dest='testbed',
                         choices=['twist', 'wilab'], type=str,
                         help='Specify in which testbed the experiment is going'
                              ' to be executed')
+    parser.add_argument('--resultsdir', dest='resultsdir',
+                        type=str,
+                        help='Full path of the base directory where the '
+                             'experiments results will be collected on the '
+                             'ansible master node')
     parser.add_argument('--expname', dest='expname', type=str,
                         help='Name of the experiment used to create the'
                         ' output directory. WARNING: any existing directory'
-                        ' with the same name will be destroyed.')
+                        ' with the same name will be destroyed. '
+                        '(e.g., for w.ILabt '
+                        '/proj/wall2-ilabt-iminds-be/exp/olsrprince1/)')
     parser.add_argument("-v", "--verbose", dest="verbose",
                         default=False, action="store_true")
     args = parser.parse_args()
@@ -426,7 +730,9 @@ if __name__ == '__main__':
     legacyrate = args.legacyrate
     txpower = args.txpower
     killstrategy = args.killstrategy
+    graphparams = args.graphparams
     testbed = args.testbed
+    resultsdir = args.resultsdir
     expname = args.expname
     verbose = args.verbose
 
@@ -452,6 +758,14 @@ if __name__ == '__main__':
     strategy_func = possibles.get(killstrategy)
 
     create_directory(homedir + '/' + expname, testbed)
+
+    #######################################################################
+    # Deploy firewall rules
+    preliminary_net_setup_for_firewall_rules_deployment(testbed,
+                                                        legacyrate,
+                                                        channel,
+                                                        txpower,
+                                                        graphparams)
 
     # Loop index
     while True:
@@ -766,6 +1080,7 @@ if __name__ == '__main__':
                       'collect-olsr-results.yaml ' +\
                       '--extra-vars ' +\
                       '"testbed=' + testbed + ' ' +\
+                      'rootdirname=' + resultsdir + ' ' +\
                       'expname=' + expname + '"'
 
     if verbose:

@@ -25,6 +25,7 @@ else
 	sudo ln -s $PWD/start_topology_dumper /usr/bin/start_topology_dumper
 	sudo ln -s $PWD/runat /usr/bin/runat
 	cd ../
+	${SUDO} pip install scipy
 fi
 ${SUDO} pip install pyric pyroute2 ipaddr networkx
 

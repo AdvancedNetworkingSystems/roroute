@@ -4,19 +4,30 @@
   - name: set expname
     set_fact:
       expname: ""
+  - name: set root dir name
+    set_fact:
+      rootdirname: "{{ ansible_env.HOME }}"
   - name: remove results directory
-    local_action: command rm -rf "{{ ansible_env.HOME }}/{{ expname }}_results"
+    local_action: command rm -rf "{{ rootdirname }}/{{ expname }}_results"
     args:
       warn: false
   - name: create results directory
-    local_action: command mkdir -p "{{ ansible_env.HOME }}/{{ expname }}_results"
+    local_action: command mkdir -p "{{ rootdirname }}/{{ expname }}_results"
     args:
       warn: false
   - name: archive results
-    shell: tar -czf "{{ ansible_env.HOME }}/{{ expname }}.tar.gz" "{{ ansible_env.HOME }}/{{ expname }}"
+    shell: tar -czf "{{ inventory_hostname }}_{{ expname }}.tar.gz" -C "{{ ansible_env.HOME }}/{{ expname }}" --transform "s,^\.,{{ inventory_hostname }}_{{ expname }}," .
     args:
       warn: false
+  - name: Removing experiment directory
+    file:
+      path: "{{ ansible_env.HOME }}/{{ expname }}"
+      state: absent
   - fetch:
-      src: "{{ ansible_env.HOME }}/{{ expname }}.tar.gz"
-      dest: "{{ ansible_env.HOME }}/{{ expname }}_results/{{ inventory_hostname }}_{{ expname }}.tar.gz"
+      src: "{{ ansible_env.HOME }}/{{ inventory_hostname }}_{{ expname }}.tar.gz"
+      dest: "{{ rootdirname }}/{{ expname }}_results/{{ inventory_hostname }}_{{ expname }}.tar.gz"
       flat: yes
+  - name: Removing archives
+    file:
+      path: "{{ ansible_env.HOME }}/{{ inventory_hostname }}_{{ expname }}.tar.gz"
+      state: absent
