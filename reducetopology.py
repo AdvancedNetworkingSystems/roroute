@@ -135,16 +135,16 @@ def print_matrix(m, mapping=None):
         sys.stdout.write("\n")
 
 
-def get_firewall_rules(graphml_file, generator, gen_args, display=False):
+def get_firewall_rules(graph, generator, gen_args, display=False):
     """
-    Given a graphml file representing the real topology of a testbed, returns
+    Given a networkx graph representing the real topology of a testbed, returns
     the firewall rules to be applied to obtain a synthetic topology with the
     generated using a given generator. In addition, the function returns a
     score between 0 and 1 which represents how close is the new topology to the
     synthetic topology. A score of 1 means that the testbed topology
     can be transformed to completely match the synthetic graph. A score of 0
     indicates that no link can be matched
-    :param graphml_file: graphml file with the testbed topology
+    :param graph: networkx graph
     :param generator: a networkx function name (e.g., "random_regular_graph")
     that accepts the parameter n as the number of nodes, plus additional
     parameters, that generates a networkx graph
@@ -156,8 +156,8 @@ def get_firewall_rules(graphml_file, generator, gen_args, display=False):
     links to be disabled, while the second is the matching score
     """
 
-    # load graphml file and remove "id_" from node names
-    testbed_g = nx.read_graphml(graphml_file)
+    # remove "id_" from node names
+    testbed_g = graph
     old_names = testbed_g.nodes()
     new_names = dict((i, i.replace('id_', '')) for i in old_names)
     nx.relabel_nodes(testbed_g, new_names, copy=False)
