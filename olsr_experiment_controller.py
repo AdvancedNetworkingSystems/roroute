@@ -508,7 +508,7 @@ def one_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
 
     ret_stop_strategy_list = []
     ret_start_strategy_list = []
-    betcent_nodes = nx.betweenness_centrality(start_graph)
+    betcent_nodes = nx.betweenness_centrality(start_graph, weight='weight')
     betcent_sorted_nodes = sorted(betcent_nodes.items(),
                                   key=lambda x: x[1], reverse=True)
 
@@ -533,7 +533,7 @@ def two_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
 
     ret_stop_strategy_list = []
     ret_start_strategy_list = []
-    betcent_nodes = nx.betweenness_centrality(start_graph)
+    betcent_nodes = nx.betweenness_centrality(start_graph, weight='weight')
     betcent_sorted_nodes = sorted(betcent_nodes.items(),
                                   key=lambda x: x[1], reverse=True)
 
