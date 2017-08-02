@@ -15,24 +15,30 @@
 char* get_olsr_data(const char *query)
 {
 	int sd, sent;
-	char *recv_buffer;
+	char *recv_buffer = 0;
 	if((sd = _create_socket(HOST, PORT))==0){
-		return 0;
+		goto exit_err;
 	}
 	if( (sent = send(sd, query, strlen(query), MSG_NOSIGNAL))==-1){
 		close(sd);
-		return 0;
+		goto exit_err;
 	}
 	if(!_telnet_receive(sd, &recv_buffer)){
 		close(sd);
-		return 0;
+		goto exit_err;
 	}
 	close(sd);
+	return recv_buffer;
+
+	exit_err:
+	recv_buffer = malloc(1);
+	if (recv_buffer)
+		recv_buffer[0] = 0;
 	return recv_buffer;
 }
 
 void remove_newline(char *str) {
-	if (!str)
+	if (!str || strcmp(str, "") == 0)
 		return;
 	int pos = 0;
 	while (str[pos] != 0 && str[pos] != '\n')
