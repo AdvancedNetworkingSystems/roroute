@@ -32,6 +32,8 @@ char* get_olsr_data(const char *query)
 }
 
 void remove_newline(char *str) {
+	if (!str)
+		return;
 	int pos = 0;
 	while (str[pos] != 0 && str[pos] != '\n')
 		pos++;
