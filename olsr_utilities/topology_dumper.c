@@ -44,6 +44,7 @@ void remove_newline(char *str) {
 int main(int argc, char **argv) {
 
 	char *topology, *routing_table, *hello, *tc;
+	char *last_topology, *last_routing_table, *last_hello, *last_tc;
 	struct timespec start_time;
 	struct timespec stop_time;
 	struct timespec interval;
@@ -79,6 +80,10 @@ int main(int argc, char **argv) {
 	next = start_time;
 
 	i = 0;
+	last_topology = 0;
+	last_routing_table = 0;
+	last_hello = 0;
+	last_tc = 0;
 	do {
 		timespec_get(&now, TIME_UTC);
 		timespec_diff(&now, &next, &wait_time);
@@ -92,35 +97,54 @@ int main(int argc, char **argv) {
 
 		timespec_get(&now, TIME_UTC);
 		sprintf(base_filename, "%s_%06d_%lld_%09lld", argv_id, i, (long long)now.tv_sec, (long long)now.tv_nsec);
-		sprintf(topo_filename, "%s%s", base_filename, EXT_TOPO);
-		sprintf(route_filename, "%s%s", base_filename, EXT_ROUTE);
-		sprintf(interval_filename, "%s%s", base_filename, EXT_INTERVAL);
-		topo_out = fopen(topo_filename, "w");
-		route_out = fopen(route_filename, "w");
-		interval_out = fopen(interval_filename, "w");
-		if (topology) {
+		if (topology && (!last_topology || strcmp(last_topology, topology) != 0)) {
+			sprintf(topo_filename, "%s%s", base_filename, EXT_TOPO);
+			topo_out = fopen(topo_filename, "w");
 			fprintf(topo_out, "%s", topology);
+			free(last_topology);
+			last_topology = topology;
+			fclose(topo_out);
+		}
+		else {
 			free(topology);
 		}
-		if (routing_table) {
+		if (routing_table && (!last_routing_table || strcmp(last_routing_table, routing_table) != 0)) {
+			sprintf(route_filename, "%s%s", base_filename, EXT_ROUTE);
+			route_out = fopen(route_filename, "w");
 			fprintf(route_out, "%s", routing_table);
+			free(last_routing_table);
+			last_routing_table = routing_table;
+			fclose(route_out);
+		}
+		else {
 			free(routing_table);
 		}
-		if (hello) {
+		if (hello && tc && (!last_hello || strcmp(last_hello, hello) != 0 || strcmp(last_tc, tc) != 0)) {
+			sprintf(interval_filename, "%s%s", base_filename, EXT_INTERVAL);
+			interval_out = fopen(interval_filename, "w");
 			fprintf(interval_out, "%s", hello);
-			free(hello);
-		}
-		if (tc) {
 			fprintf(interval_out, "%s", tc);
+			free(last_hello);
+			last_hello = hello;
+			free(last_tc);
+			last_tc = tc;
+			fclose(interval_out);
+		}
+		else {
+			free(hello);
 			free(tc);
 		}
-		fclose(topo_out);
-		fclose(route_out);
-		fclose(interval_out);
+
 		i++;
 		timespec_sum(&next, &interval, &next);
 		timespec_diff(&next, &stop_time, &till_end);
 	} while (till_end.tv_sec >= 0);
+
+
+	free(last_topology);
+	free(last_routing_table);
+	free(last_hello);
+	free(last_tc);
 
 	return 0;
 }
