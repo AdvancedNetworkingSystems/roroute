@@ -92,10 +92,14 @@ int main(int argc, char **argv) {
 	last_routing_table = 0;
 	last_hello = 0;
 	last_tc = 0;
+	int sign;
 	do {
 		timespec_get(&now, TIME_UTC);
-		timespec_diff(&now, &next, &wait_time);
-		nanosleep(&wait_time, 0);
+		sign = timespec_diff(&now, &next, &wait_time);
+		if (sign > 0)
+			nanosleep(&wait_time, 0);
+		else
+			next = now;
 		topology = get_olsr_data(REQ_TOPOLOGY);
 		routing_table = get_olsr_data(REQ_ROUTE);
 		hello = get_olsr_data(REQ_HELLO);
@@ -145,8 +149,8 @@ int main(int argc, char **argv) {
 
 		i++;
 		timespec_sum(&next, &interval, &next);
-		timespec_diff(&next, &stop_time, &till_end);
-	} while (till_end.tv_sec >= 0);
+		sign = timespec_diff(&next, &stop_time, &till_end);
+	} while (sign >= 0);
 
 
 	free(last_topology);

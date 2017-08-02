@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-void timespec_diff(struct timespec *start, struct timespec *stop, struct timespec *result);
+int timespec_diff(struct timespec *start, struct timespec *stop, struct timespec *result);
 void timespec_sum(struct timespec *a, struct timespec *b, struct timespec *result);
 
 #endif

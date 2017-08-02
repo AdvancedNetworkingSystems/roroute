@@ -1,6 +1,6 @@
 #include "utilities.h"
 
-void timespec_diff(struct timespec *start, struct timespec *stop, struct timespec *result) {
+void timespec_positive_diff(struct timespec *start, struct timespec *stop, struct timespec *result) {
 	if ((stop->tv_nsec - start->tv_nsec) < 0) {
 		result->tv_sec = stop->tv_sec - start->tv_sec - 1;
 		result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
@@ -22,3 +22,24 @@ void timespec_sum(struct timespec *a, struct timespec *b, struct timespec *resul
 	*result = tmp;
 }
 
+
+int timespec_diff(struct timespec *start, struct timespec *stop, struct timespec *result) {
+	int sign = 1;
+	if (stop->tv_sec > start->tv_sec) {
+		timespec_positive_diff(start, stop, result);
+	}
+	else if (stop->tv_sec < start->tv_sec) {
+		timespec_positive_diff(stop, start, result);
+		sign = -1;
+	}
+	else if (stop->tv_nsec >= start->tv_nsec) {
+		timespec_positive_diff(start, stop, result);
+	}
+	else {
+		timespec_positive_diff(stop, start, result);
+		sign = -1;
+	}
+	if (result->tv_sec == 0 && result->tv_nsec == 0)
+		sign = 0;
+	return sign;
+}
