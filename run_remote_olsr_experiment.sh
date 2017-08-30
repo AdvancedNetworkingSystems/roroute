@@ -18,7 +18,7 @@ if [ "$9" == "True" ]; then
 else
 	verbose=""
 fi
-copyresults=$10
+copyresults=${10}
 
 . ./setenv.sh $testbed
 
