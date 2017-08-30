@@ -521,6 +521,30 @@ def one_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
     return (ret_stop_strategy_list, ret_start_strategy_list)
 
 
+# This function extract the five most central nodes (betweenness centrality)
+# and produces the following strategy for each of the five nodes:
+# - The node is stopped at 1s and necer restarted
+# We assume the graph as at least five nodes
+def one_node_stop_1s_5mostcentral(start_graph, current_stable_graph,
+                                  stop_strategy_list,
+                                  start_strategy_list,
+                                  strategy_idx):
+    if stop_strategy_list:
+        return (stop_strategy_list, start_strategy_list)
+
+    ret_stop_strategy_list = []
+    ret_start_strategy_list = []
+    betcent_nodes = nx.betweenness_centrality(start_graph, weight='weight')
+    betcent_sorted_nodes = sorted(betcent_nodes.items(),
+                                  key=lambda x: x[1], reverse=True)
+
+    for idx in range(0, 5):
+        ret_stop_strategy_list.append(betcent_sorted_nodes[idx][0] + '@1.000')
+        ret_start_strategy_list.append('')
+
+    return (ret_stop_strategy_list, ret_start_strategy_list)
+
+
 # This function produces a strategy where the two most central nodes
 # (betweenness centrality) are stopped at 1s and restarted at 61s
 # We assume the graph as at least two nodes
@@ -676,6 +700,7 @@ strategy_functions = [
                     'stop_one_random_node_1s_start_61s',
                     'one_node_stop_1s_start_61s_2mostcentral',
                     'two_node_stop_1s_start_61s_2mostcentral',
+                    'one_node_stop_1s_5mostcentral',
         ]
 
 
@@ -1023,31 +1048,36 @@ if __name__ == '__main__':
 
         #######################################################################
         # Schedule nodes start
-        print('Scheduling nodes start')
-        sys.stdout.flush()
+        if start_strategy_list[strategy_idx]:
+            print('Scheduling nodes start')
+            sys.stdout.flush()
 
-        restart_prince_conf_file = "none"
-        if prince_configuration_file:
-            restart_prince_conf_file = prince_configuration_file
+            restart_prince_conf_file = "none"
+            if prince_configuration_file:
+                restart_prince_conf_file = prince_configuration_file
 
-        start_strategy_converted_str = \
-            convert_nodes_id_to_hostname(start_strategy_list[strategy_idx])
-        sched_start_cmd = 'ansible-playbook ' +\
-                          'restart-my-wifi.yaml ' +\
-                          '--extra-vars ' +\
-                          '"testbed=' + testbed + ' ' +\
-                          'rate=' + str(legacyrate) + ' ' +\
-                          'channel=' + str(channel) + ' ' +\
-                          'power=' + str(txpower) + ' ' +\
-                          'prince_conf=' + restart_prince_conf_file + ' ' +\
-                          'start=' + str(dumper_start_time) + ' ' +\
-                          'nodes=' + start_strategy_converted_str + '"'
+            start_strategy_converted_str = \
+                convert_nodes_id_to_hostname(start_strategy_list[strategy_idx])
+            sched_start_cmd = 'ansible-playbook ' +\
+                              'restart-my-wifi.yaml ' +\
+                              '--extra-vars ' +\
+                              '"testbed=' + testbed + ' ' +\
+                              'rate=' + str(legacyrate) + ' ' +\
+                              'channel=' + str(channel) + ' ' +\
+                              'power=' + str(txpower) + ' ' +\
+                              'prince_conf=' + \
+                              restart_prince_conf_file + ' ' +\
+                              'start=' + str(dumper_start_time) + ' ' +\
+                              'nodes=' + start_strategy_converted_str + '"'
 
-        if verbose:
-            print(sched_start_cmd)
-        sys.stdout.flush()
+            if verbose:
+                print(sched_start_cmd)
+            sys.stdout.flush()
 
-        [rcode, cout, cerr] = run_command(sched_start_cmd)
+            [rcode, cout, cerr] = run_command(sched_start_cmd)
+        else:
+            print('Current strategy does not require to restart any node')
+            sys.stdout.flush()
 
         #######################################################################
         # Wait end of experiment
@@ -1056,11 +1086,11 @@ if __name__ == '__main__':
         sys.stdout.flush()
         time.sleep(seconds_before_exp_ends)
 
-        if prince_running:
-            with open(iter_results_dir_name + '/stretegies', 'wa') as of:
-                of.write(stop_strategy_list[strategy_idx])
-                of.write('\n')
+        with open(iter_results_dir_name + '/strategies', 'w') as of:
+            of.write(stop_strategy_list[strategy_idx])
+            of.write('\n')
 
+        if prince_running:
             strategy_idx += 1
 
         if strategy_idx == len(stop_strategy_list):
