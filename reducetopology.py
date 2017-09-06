@@ -22,6 +22,7 @@
 #
 
 import networkx as nx
+import customtopo as ct
 import sys
 import scipy.sparse as sp
 
@@ -177,11 +178,22 @@ def get_firewall_rules(graph, generator_string, display=False):
     testbed_sm = [mp[testbed_sd[i]] for i in range(len(testbed_sd))]
     testbed_matrix = __get_matrix(testbed_am, testbed_sm)
 
-    generator, parameters = generator_string.split(":")
-    gen_args = dict((p.split("=")[0], eval(p.split("=")[1])) for p in
-                    parameters.split(","))
+    if generator_string.find(":") != -1:
+        generator, parameters = generator_string.split(":")
+        gen_args = dict((p.split("=")[0], eval(p.split("=")[1])) for p in
+                        parameters.split(","))
+    else:
+        generator = generator_string
+        gen_args = dict()
+
     # create a synthetic graph by calling the given generator
-    synt_g = getattr(nx, generator)(n=n_nodes, **gen_args)
+    # search for the generator inside networkx. if not found, use one of our
+    # custom generators
+    try:
+        gen_function = getattr(nx, generator)
+    except AttributeError:
+        gen_function = getattr(ct, generator)
+    synt_g = gen_function(n=n_nodes, **gen_args)
     synt_am = nx.adj_matrix(synt_g)
     synt_d = synt_g.degree()
     # sort by degree as for the real graph
