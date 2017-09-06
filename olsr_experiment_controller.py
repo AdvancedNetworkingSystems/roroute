@@ -760,7 +760,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
 verbose = False
 strategy_functions = [
-                    'stop_mostcentral_1s_repeat10'
+                    'stop_mostcentral_1s_repeat10',
                     'stop_one_random_node_1s',
                     'one_node_stop_1s_5mostcentral',
                     'stop_one_node_1s_loop',
