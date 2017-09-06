@@ -33,6 +33,11 @@ import reducetopology
 
 
 def create_directory(dirname, testbed):
+    '''Create a directory on the nodes of the testbed.
+    dirname: the directory name that will be created on the nodes of the
+    testbed.
+    testbed: the name of the testbed (wilab or twist)
+    '''
 
     print("Creating directory %s" % (dirname,))
     sys.stdout.flush()
@@ -66,6 +71,11 @@ def run_command(command):
 
 
 def convert_nodes_id_to_hostname(strategy_str):
+    '''
+    Utility function that takes as input a kill/restart strategy string and
+    convert the nodes IDs into the corresponding hostname.
+    '''
+
     ret_strategy_str = ''
     nodeids_hostname_dict = {}
     nodeids_times = strategy_str.split(',')
@@ -92,6 +102,11 @@ def convert_nodes_id_to_hostname(strategy_str):
 def compute_topology_dumper_times(strategy_string,
                                   start_guard_s,
                                   stop_guard_s):
+    '''
+    Utility function that computes the start/stop times of the topology dumper
+    based on the current strategy string.
+    '''
+
     now = int(time.time())
     start_time = now + start_guard_s
 
@@ -160,9 +175,12 @@ def dump_olsr_routing_table():
             sys.stdout.flush()
 
 
-# Compares the shortest paths in g1 and in g2.
-# Returns True or False if the shortest paths match or not
 def compare_shortest_paths(g1, g2):
+    '''
+    Compares the shortest paths in g1 and in g2.
+    Returns True if the shortest paths match of False otherwise.
+    '''
+
     n1sorted = sorted(g1.nodes())
     n2sorted = sorted(g2.nodes())
     sp_match = True
@@ -242,16 +260,11 @@ def wait_for_stable_topology():
     seconds we return the last obtained graph. The function returns the tuple
     (Graph, stable), where Graph is the obtained graph and stable is a boolean
     equals True if the topology reched convergence.
+    FIX  THIS: In the current implementation with give highest priority to the
+    local routing table: if the local routing table does not change for
+    stability_threshold seconds then the topology is considered stable even if
+    the graph returned by olsrd2 changed
     '''
-
-    # WARNING: Preliminary observations
-    # When the network is configured with parameters that reduces the channel
-    # quality on purpose (e.g., 54Mbps and 3dBm tx power) then the olsrd2
-    # topology keeps chainging and there is the risk the convergence will be
-    # never reached.
-    #
-    # Instead, by using "good"channel parameters (e.g., 6Mbps and 20dBm tx
-    # power) then the olsrd2 topology stabilizes.
 
     previous_graph = None
     previous_routing_table = None
@@ -263,13 +276,19 @@ def wait_for_stable_topology():
     stability_counter = 0
     stability_threshold = 20
 
+    # After max_attempts we continue the experiment even if the topology didn't
+    # converge.
     while attempts_counter <= max_attempts:
-        # Obtain topology from olsrd2 daemon
+        # Obtain topology and routing table from olsrd2 daemon
+        print('Topology convergence check (attempt #%d / %d)' %
+              (attempts_counter, max_attempts))
+        print('stability_counter = %d / %d' %
+              (stability_counter, stability_threshold))
         if verbose:
-            print('Topology convergence check (attempt #%d)' %
-                  (attempts_counter,))
-            print('Asking topology to olsrd2')
-            sys.stdout.flush()
+            print('Asking topology and routing table to olsrd2')
+
+        sys.stdout.flush()
+
         topology_json = dump_olsr_topology()
         routing_table_json = dump_olsr_routing_table()
 
@@ -294,41 +313,56 @@ def wait_for_stable_topology():
         # graph
         if attempts_counter != 0:
             graph_changed = True
+            nodes_changed = True
+            edges_changed = True
             nodes_previous = previous_graph.nodes()
             nodes_current = current_graph.nodes()
 
             # If current and previous graph have the same nodes
             if Counter(nodes_previous) == Counter(nodes_current):
+                nodes_changed = False
+
                 if verbose:
                     print('Previous and current graphs have the same nodes')
                     sys.stdout.flush()
+
                 graphs_diff1 = nx.difference(previous_graph, current_graph)
                 graphs_diff2 = nx.difference(current_graph, previous_graph)
-                # graphs_diff1 = previous_graph.copy()
-                # graphs_diff1 = graphs_diff1.remove_nodes_from(
-                #     n for n in previous_graph if n in current_graph)
-                # graphs_diff2 = current_graph.copy()
-                # graphs_diff2 = graphs_diff2.remove_nodes_from(
-                #     n for n in current_graph if n in previous_graph)
 
                 # and if current and previous graph have the same edges
                 if len(graphs_diff1.edges()) == 0 \
                    and len(graphs_diff2.edges()) == 0:
+                    edges_changed = False
+
                     if verbose:
                         print('Previous and current graphs have the same '
                               'edges')
-                        print('Previous and current graphs are the same')
                         sys.stdout.flush()
 
-                    if compare_shortest_paths(previous_graph, current_graph):
-                        graph_changed = False
-                        stability_counter += 1
-                        print('Previous and current graphs have the same '
-                              'shortest paths')
-                    else:
-                        print('Previous and current graphs have different '
-                              'shortest paths')
+                else:
+                    print("Edges in current graph but not in previous one")
+                    print(graphs_diff2.edges())
+                    print("Edges in previous graph but not in current one")
+                    print(graphs_diff1.edges())
+
                     sys.stdout.flush()
+
+            else:
+                print('Previous and current graphs have different nodes')
+                if verbose:
+                    print(nodes_previous)
+                    print(nodes_current)
+
+                sys.stdout.flush()
+
+            if not nodes_changed and not edges_changed:
+                # If also the shortest paths are the same then it means
+                # that the graph didn't change
+                if compare_shortest_paths(previous_graph, current_graph):
+                    graph_changed = False
+                    stability_counter += 1
+                    print('Previous and current graphs have the same '
+                          'shortest paths')
 
                     if verbose:
                         print('stability_counter = %d' % (stability_counter,))
@@ -340,46 +374,19 @@ def wait_for_stable_topology():
                             print('Topology is stable')
                             sys.stdout.flush()
                         return (current_graph, True)
+
+                    sys.stdout.flush()
                 else:
-                    print("Edges in current graph but not in previous one")
-                    print(graphs_diff2.edges())
-                    print("Edges in previous graph but not in current one")
-                    print(graphs_diff1.edges())
-
-                    if compare_shortest_paths(previous_graph, current_graph):
-                        graph_changed = False
-                        stability_counter += 1
-                        print('Previous and current graphs have the same '
-                              'shortest paths')
-
-                        if verbose:
-                            print('stability_counter = %d' %
-                                  (stability_counter,))
-                            sys.stdout.flush()
-
-                        if stability_counter == stability_threshold:
-                            # At this point we assume the topology is stable
-                            if verbose:
-                                print('Topology is stable')
-                                sys.stdout.flush()
-                            return (current_graph, True)
-
-                    else:
-                        print('Previous and current graphs have different '
-                              'shortest paths')
+                    print('Previous and current graphs have different '
+                          'shortest paths')
                     sys.stdout.flush()
 
-            else:
-                print(nodes_previous)
-                print(nodes_current)
-
-            # If the current graph changed wrt the previous one we reset the
-            # stability_counter.
             if graph_changed:
                 # As a last hope we compare the current routing table on the
                 # master node with the previous one
-                if compare_routing_table(previous_routing_table,
-                                         current_routing_table):
+                if not nodes_changed and not edges_changed and \
+                    compare_routing_table(previous_routing_table,
+                                          current_routing_table):
                     print('Routing table on master node haven\'t changed')
 
                     stability_counter += 1
@@ -406,6 +413,8 @@ def wait_for_stable_topology():
         previous_routing_table = current_routing_table
         time.sleep(1)
 
+    # If we reached this point it means the topology didn't converge after
+    # max_attempts iterations
     return (current_graph, False)
 
 
@@ -419,6 +428,7 @@ def stop_one_random_node_1s(start_graph, current_stable_graph,
                             stop_strategy_list, start_strategy_list,
                             strategy_idx):
     '''
+    TODO: This documentation is obsolete. Fix it.
     This is an example of how to implement a function that must define a
     strategy for stopping and restarting nodes.
     The function is called for every even iteration of the main controller
@@ -465,9 +475,17 @@ def stop_one_random_node_1s(start_graph, current_stable_graph,
 
     ret_stop_strategy_list = []
     ret_start_strategy_list = ['']
-    g_nodes = start_graph.nodes()
+    g = start_graph.copy()
+    # Remove selfloop
+    g.remove_edges_from(g.selfloop_edges())
+    # maximal subgraph that contains nodes of degree 2
+    g_k2 = nx.k_core(g, 2)
+    # Find the articulation points of the graph. Removing articulation point
+    # increases the number of connected components
+    excluded_nodes = [n for n in nx.articulation_points(g_k2)]
+    candidate_nodes = [n for n in g_k2.nodes() if n not in excluded_nodes]
 
-    selected_node = random.choice(g_nodes)
+    selected_node = random.choice(candidate_nodes)
     ret_stop_strategy_list.append(selected_node + '@1.000')
 
     return (ret_stop_strategy_list, ret_start_strategy_list)
@@ -523,8 +541,8 @@ def one_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
 
 # This function extract the five most central nodes (betweenness centrality)
 # and produces the following strategy for each of the five nodes:
-# - The node is stopped at 1s and necer restarted
-# We assume the graph as at least five nodes
+# - The node is stopped at 1s
+# We assume the graph as at least five nodes (not articulation point nodes)
 def one_node_stop_1s_5mostcentral(start_graph, current_stable_graph,
                                   stop_strategy_list,
                                   start_strategy_list,
@@ -534,12 +552,59 @@ def one_node_stop_1s_5mostcentral(start_graph, current_stable_graph,
 
     ret_stop_strategy_list = []
     ret_start_strategy_list = []
-    betcent_nodes = nx.betweenness_centrality(start_graph, weight='weight')
+    g = start_graph.copy()
+    # Remove selfloop
+    g.remove_edges_from(g.selfloop_edges())
+    # maximal subgraph that contains nodes of degree 2
+    # g_k = nx.k_core(g, 2)
+    # For the moment we keep also the leaves
+    g_k = nx.k_core(g, 1)
+    # Nodes ordered using betweenness centrality
+    betcent_nodes = nx.betweenness_centrality(g_k, weight='weight')
     betcent_sorted_nodes = sorted(betcent_nodes.items(),
                                   key=lambda x: x[1], reverse=True)
+    # Find the articulation points of the graph. Removing articulation point
+    # increases the number of connected components
+    excluded_nodes = [n for n in nx.articulation_points(g_k)]
+    candidate_nodes = [n[0] for n in betcent_sorted_nodes
+                       if n[0] not in excluded_nodes]
 
-    for idx in range(0, 5):
-        ret_stop_strategy_list.append(betcent_sorted_nodes[idx][0] + '@1.000')
+    for idx in range(0, min(5, len(candidate_nodes))):
+        ret_stop_strategy_list.append(candidate_nodes[idx] + '@1.000')
+        ret_start_strategy_list.append('')
+
+    return (ret_stop_strategy_list, ret_start_strategy_list)
+
+
+# This function extract the most central node (betweenness centrality)
+# and produces the following strategy:
+# - The node is stopped at 1s
+# The strategy is repeated 10 times
+# We assume the graph as at least five nodes (not articulation point nodes)
+def stop_mostcentral_1s_repeat10(start_graph, current_stable_graph,
+                                 stop_strategy_list,
+                                 start_strategy_list,
+                                 strategy_idx):
+    if stop_strategy_list:
+        return (stop_strategy_list, start_strategy_list)
+
+    ret_stop_strategy_list = []
+    ret_start_strategy_list = []
+    g = start_graph.copy()
+    # Remove selfloop
+    g.remove_edges_from(g.selfloop_edges())
+    # Nodes ordered using betweenness centrality
+    betcent_nodes = nx.betweenness_centrality(g, weight='weight')
+    betcent_sorted_nodes = sorted(betcent_nodes.items(),
+                                  key=lambda x: x[1], reverse=True)
+    # Find the articulation points of the graph. Removing articulation point
+    # increases the number of connected components
+    excluded_nodes = [n for n in nx.articulation_points(g)]
+    candidate_nodes = [n[0] for n in betcent_sorted_nodes
+                       if n[0] not in excluded_nodes]
+
+    for idx in range(0, 10):
+        ret_stop_strategy_list.append(candidate_nodes[0] + '@1.000')
         ret_start_strategy_list.append('')
 
     return (ret_stop_strategy_list, ret_start_strategy_list)
@@ -695,12 +760,13 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
 verbose = False
 strategy_functions = [
+                    'stop_mostcentral_1s_repeat10'
                     'stop_one_random_node_1s',
+                    'one_node_stop_1s_5mostcentral',
                     'stop_one_node_1s_loop',
                     'stop_one_random_node_1s_start_61s',
                     'one_node_stop_1s_start_61s_2mostcentral',
                     'two_node_stop_1s_start_61s_2mostcentral',
-                    'one_node_stop_1s_5mostcentral',
         ]
 
 
