@@ -7,6 +7,7 @@ kill_cmd1="$(which sudo) ip link set dev poprow0 down"
 opkg_path=`which opkg`
 if [ -z "$opkg_path" ]; then
 	host_name=`hostname | cut -d'.' -f 1`
+	kill_cmd1="$(which sudo) killall -9 olsrd2_dynamic; ${kill_cmd1}"
 	kill_cmd3='sudo service olsrd2 stop'
 
 	kill_cmd2=''
