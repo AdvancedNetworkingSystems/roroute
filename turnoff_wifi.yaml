@@ -2,6 +2,6 @@
 - hosts: "{{ testbed | default('twist') }}"
   tasks:
   - name: switching off wifi interface
-    command: "/usr/bin/env python turnoff_wifi.py"
+    command: "/usr/bin/env sh turnoff_wifi.sh"
     args:
       chdir: "{{ ansible_env.HOME }}"
