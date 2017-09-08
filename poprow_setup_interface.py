@@ -152,7 +152,8 @@ if __name__ == '__main__':
 
         ibss_join_cmd = 'iw dev ' + args.ibssiname + ' ibss join ' +\
                         args.ibssid + ' ' + str(channels.ch2rf(args.chan)) +\
-                        ' fixed-freq beacon-interval ' + str(args.bint)
+                        ' fixed-freq 00:11:22:33:44:55 beacon-interval ' +\
+                        str(args.bint)
         print(ibss_join_cmd)
         [rcode, sout, serr] = run_command(ibss_join_cmd)
 
