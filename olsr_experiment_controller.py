@@ -720,9 +720,9 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
     #######################################################################
     # Wait for olsr convergence
-    print("Sleep for 10 seconds...")
+    print("Sleep for 20 seconds...")
     sys.stdout.flush()
-    time.sleep(10)
+    time.sleep(20)
     print("Wait for olsr topology convergence...")
     current_graph, graph_stable = wait_for_stable_topology()
 
@@ -740,22 +740,21 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
     #######################################################################
     # Deploy the actual firewall rules using set-firewall-rules.yaml
-    print("Setting firewall rules")
-    sys.stdout.flush()
-    firewall_cmd = 'ansible-playbook set-firewall-rules.yaml ' +\
-                   '--extra-vars ' +\
-                   '"testbed=' + testbed + ' ' +\
-                   'rules=' + nodes_rules + '"'
+    # print("Setting firewall rules")
+    # sys.stdout.flush()
+    # firewall_cmd = 'ansible-playbook set-firewall-rules.yaml ' +\
+    #                '--extra-vars ' +\
+    #                '"testbed=' + testbed + ' ' +\
+    #                'rules=' + nodes_rules + '"'
 
-    if verbose:
-        print(firewall_cmd)
-    sys.stdout.flush()
+    # if verbose:
+    #     print(firewall_cmd)
+    # sys.stdout.flush()
 
-    [rcode, cout, cerr] = run_command(firewall_cmd)
+    # [rcode, cout, cerr] = run_command(firewall_cmd)
+    print("Computing firewall rules: %s" % (nodes_rules,))
 
-    #######################################################################
-    #  Probably we should wait again for convegence and then check if we
-    #  obtained the expected graph
+    return nodes_rules
 
 
 verbose = False
@@ -852,11 +851,12 @@ if __name__ == '__main__':
 
     #######################################################################
     # Deploy firewall rules
-    preliminary_net_setup_for_firewall_rules_deployment(testbed,
-                                                        legacyrate,
-                                                        channel,
-                                                        txpower,
-                                                        graphparams)
+    nodes_rules =\
+        preliminary_net_setup_for_firewall_rules_deployment(testbed,
+                                                            legacyrate,
+                                                            channel,
+                                                            txpower,
+                                                            graphparams)
 
     # Loop index
     while True:
@@ -901,6 +901,20 @@ if __name__ == '__main__':
         sys.stdout.flush()
 
         [rcode, cout, cerr] = run_command(stop_olsr_cmd)
+
+        #######################################################################
+        # Flush firewall rules
+        print("Flush firewall rules")
+        sys.stdout.flush()
+        flush_cmd = 'ansible-playbook flush-firewall-rules.yaml ' +\
+                    '--extra-vars ' +\
+                    '"testbed=' + testbed + '"'
+
+        if verbose:
+            print(flush_cmd)
+        sys.stdout.flush()
+
+        [rcode, cout, cerr] = run_command(flush_cmd)
 
         #######################################################################
         # Check if prince is required (prince_running == True)
@@ -950,6 +964,21 @@ if __name__ == '__main__':
         # TODO: check for possible errors of setup_interfaces_cmd
 
         #######################################################################
+        # Deploy the actual firewall rules using set-firewall-rules.yaml
+        print("Setting firewall rules")
+        sys.stdout.flush()
+        firewall_cmd = 'ansible-playbook set-firewall-rules.yaml ' +\
+                       '--extra-vars ' +\
+                       '"testbed=' + testbed + ' ' +\
+                       'rules=' + nodes_rules + '"'
+
+        if verbose:
+            print(firewall_cmd)
+        sys.stdout.flush()
+
+        [rcode, cout, cerr] = run_command(firewall_cmd)
+
+        #######################################################################
         # Start olsrd2
         print("Starting olsrd2")
         sys.stdout.flush()
@@ -987,9 +1016,9 @@ if __name__ == '__main__':
 
         #######################################################################
         # Wait for olsr convergence
-        print("Sleep for 10 seconds...")
+        print("Sleep for 20 seconds...")
         sys.stdout.flush()
-        time.sleep(10)
+        time.sleep(20)
         print("Wait for olsr topology convergence...")
         current_start_graph, start_graph_stable = wait_for_stable_topology()
 
@@ -1030,12 +1059,6 @@ if __name__ == '__main__':
             if graph_changed:
                 print("WARNING: current stable topology is different from the "
                       "original stable topology")
-
-                if verbose:
-                    print("Edges in current graph but not in the original one")
-                    print(graphs_diff2.edges())
-                    print("Edges in original graph but not in the current one")
-                    print(graphs_diff1.edges())
             else:
                 print("Current stable topology is the same as original "
                       "stable topology")
