@@ -25,6 +25,7 @@ import networkx as nx
 import customtopo as ct
 import sys
 import scipy.sparse as sp
+import random
 
 
 def __get_matrix(m, mapping):
@@ -76,15 +77,17 @@ def __matching_score(a, b):
     return 1 - (abs(a - b)).sum() / b.sum()
 
 
-def __get_disabled_links(m, sorted_map, nodes):
+def __get_links(m, sorted_map, nodes, disabled=True):
     """
     Given an adjacency matrix returns a dictionary mapping between each node
-    and the nodes that are not able to communicate with it
+    and the nodes that are not able (or able) to communicate with it
     :param m: adjacency matrix
     :param sorted_map: map from the indexes in the adjacency matrix to the
     index of the nodes
     :param nodes: array of node names
-    :return: disabled links dictionary
+    :param disabled: if set to true, the function returns the disabled links,
+    otherwise the active topology links
+    :return: disabled (or enabled) links dictionary
     """
     dl = dict()
     n = m.get_shape()[0]
@@ -92,15 +95,37 @@ def __get_disabled_links(m, sorted_map, nodes):
         node = nodes[sorted_map[r]]
         dl[node] = []
         for c in range(n):
-            if r != c and m[r,c] == 0:
-                dl[node].append(nodes[sorted_map[c]])
+            if r != c:
+                if (disabled and m[r, c] == 0) or \
+                   (not disabled and m[r, c] != 0):
+                    dl[node].append(nodes[sorted_map[c]])
     return dl
+
+
+def __add_link_costs(enabled_links, seed):
+    """
+    Given the dictionary of enabled links, return a dictionary of tuples
+    where the first item of the tuple is the IP of the neighbor and the
+    second a randomized link cost
+    :param enabled_links: dictionary of enabled links
+    :param seed: a seed used to initialize the PRNGs
+    :return: the dictionary with randomized link costs
+    """
+    link_step = 500
+    n_costs = 20
+    random.seed(seed)
+    lc = dict()
+    for node, neighbors in enabled_links.iteritems():
+        lc[node] = []
+        for neigh in neighbors:
+            lc[node].append((neigh, random.randint(1, n_costs) * link_step))
+    return lc
 
 
 def __stringify_disabled_links(disabled_links):
     """
-    Transforms the dictionary computed by the __get_disabled_links method
-    into a configuration string for the experiments
+    Transforms the dictionary computed by the __get_links method into a
+    configuration string for the experiments
     :param disabled_links: disabled links dictionary
     :return: configuration string in the format "IP1:IPa,IPb,IPc;IP2:IPd,IPe"
     """
@@ -109,6 +134,21 @@ def __stringify_disabled_links(disabled_links):
     merge_nodes = ["%s:%s" % (k, v) for k, v in merge_neighbors.iteritems()]
     merge_all = ";".join(merge_nodes)
     return merge_all
+
+
+def __stringify_link_costs(link_costs):
+    """
+    Transforms the dictionary computed by the __add_link_costs method
+    into a configuration string for the experiments
+    :param link_costs: link costs dictionary
+    :return: configuration string in the format "IP1:IPa-cost,IPb-cost;..."
+    """
+    costs = []
+    for node, neighbors in link_costs.iteritems():
+        node_costs = ','.join(["%s-%d" % (neigh, cost)
+                               for (neigh, cost) in neighbors])
+        costs.append("%s:%s" % (node, node_costs))
+    return ';'.join(costs)
 
 
 def print_matrix(m, mapping=None):
@@ -133,7 +173,7 @@ def print_matrix(m, mapping=None):
         sys.stdout.write("\n")
 
 
-def get_firewall_rules(graph, generator_string, display=False):
+def get_firewall_rules(graph, generator_string, seed=0, display=False):
     """
     Given a networkx graph representing the real topology of a testbed, returns
     the firewall rules to be applied to obtain a synthetic topology with the
@@ -219,10 +259,14 @@ def get_firewall_rules(graph, generator_string, display=False):
 
     # given the experiment matrix and the nodes of the testbed, get the links
     # that must be disabled to obtain the desired topology
-    disabled_links = __get_disabled_links(experiment_matrix, testbed_sm,
-                                          testbed_g.nodes())
+    disabled_links = __get_links(experiment_matrix, testbed_sm,
+                                 testbed_g.nodes())
     # transform this into a string usable by the scripts
     rules = __stringify_disabled_links(disabled_links)
 
+    link_costs = __add_link_costs(__get_links(experiment_matrix, testbed_sm,
+                                              testbed_g.nodes(), False), seed)
+    costs = __stringify_link_costs(link_costs)
+
     # we return the configuration string and the measure of the match
-    return rules, score
+    return rules, costs, score
