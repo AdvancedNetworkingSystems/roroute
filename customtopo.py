@@ -39,3 +39,17 @@ def line_diamond_graph(n):
     g.add_edge(n/2, n-1)
     g.add_edge(n/2-2, n-1)
     return g
+
+
+def ring_graph(n):
+    """
+    Generate a ring graph with n nodes
+    :param n: number of nodes
+    :return: a networkx graph with the given topology
+    """
+    # create an empty undirected graph with n nodes
+    g = nx.empty_graph(n, create_using=nx.Graph())
+    for i in range(n-1):
+        g.add_edge(i, i+1)
+    g.add_edge(0, n-1)
+    return g
