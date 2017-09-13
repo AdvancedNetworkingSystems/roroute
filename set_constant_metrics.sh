@@ -68,4 +68,10 @@ EOF
 
 echo "${metrics_out}" > /tmp/olsrd2.conf
 
-sudo cp /tmp/olsrd2.conf /etc/olsrd2/olsrd2.conf
+opkg_path=`which opkg`
+if [ -z "$opkg_path" ]; then
+	sudo cp /tmp/olsrd2.conf /etc/olsrd2/olsrd2.conf
+else
+	echo "WARNING: constant metrics deployment not implemented on OpenWRT"
+	exit 1
+fi
