@@ -274,7 +274,7 @@ def wait_for_stable_topology():
     # When stability_counter reaches stability_threshold we consider the
     # topology stable
     stability_counter = 0
-    stability_threshold = 20
+    stability_threshold = 30
 
     # After max_attempts we continue the experiment even if the topology didn't
     # converge.
@@ -299,7 +299,12 @@ def wait_for_stable_topology():
             current_graph.add_node(n['id'])
 
         for l in topology_json['links']:
-            lcost = float(l['cost_text'].replace('bit/s', ''))
+            lcost_str = l['cost_text'].replace('bit/s', '')
+            lcost = 0.0
+            if lcost_str.startswith('0x'):
+                lcost = float(int(lcost_str, 16))
+            else:
+                lcost = float(lcost_str)
             # lcost = float(l['cost'])
             current_graph.add_edge(l['source'], l['target'], weight=lcost)
 
@@ -419,14 +424,14 @@ def wait_for_stable_topology():
 
 
 def stop_one_node_1s_loop(start_graph, current_stable_graph,
-                          strategy_list, strategy_idx):
+                          strategy_list, strategy_idx, nrepeat):
     raise Exception('Strategy not implemented yet')
 
 
 # This strategy selects a random nodes and stops it after 1 second
 def stop_one_random_node_1s(start_graph, current_stable_graph,
                             stop_strategy_list, start_strategy_list,
-                            strategy_idx):
+                            strategy_idx, nrepeat):
     '''
     TODO: This documentation is obsolete. Fix it.
     This is an example of how to implement a function that must define a
@@ -495,7 +500,7 @@ def stop_one_random_node_1s(start_graph, current_stable_graph,
 # it after 61s
 def stop_one_random_node_1s_start_61s(start_graph, current_stable_graph,
                                       stop_strategy_list, start_strategy_list,
-                                      strategy_idx):
+                                      strategy_idx, nrepeat):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -520,7 +525,8 @@ def stop_one_random_node_1s_start_61s(start_graph, current_stable_graph,
 def one_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
                                             stop_strategy_list,
                                             start_strategy_list,
-                                            strategy_idx):
+                                            strategy_idx,
+                                            nrepeat):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -546,7 +552,8 @@ def one_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
 def one_node_stop_1s_5mostcentral(start_graph, current_stable_graph,
                                   stop_strategy_list,
                                   start_strategy_list,
-                                  strategy_idx):
+                                  strategy_idx,
+                                  nrepeat):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -581,10 +588,11 @@ def one_node_stop_1s_5mostcentral(start_graph, current_stable_graph,
 # - The node is stopped at 1s
 # The strategy is repeated 10 times
 # We assume the graph as at least five nodes (not articulation point nodes)
-def stop_mostcentral_1s_repeat10(start_graph, current_stable_graph,
-                                 stop_strategy_list,
-                                 start_strategy_list,
-                                 strategy_idx):
+def stop_mostcentral_1s_repeat(start_graph, current_stable_graph,
+                               stop_strategy_list,
+                               start_strategy_list,
+                               strategy_idx,
+                               nrepeat):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -603,7 +611,7 @@ def stop_mostcentral_1s_repeat10(start_graph, current_stable_graph,
     candidate_nodes = [n[0] for n in betcent_sorted_nodes
                        if n[0] not in excluded_nodes]
 
-    for idx in range(0, 10):
+    for idx in range(0, nrepeat):
         ret_stop_strategy_list.append(candidate_nodes[0] + '@1.000')
         ret_start_strategy_list.append('')
 
@@ -616,7 +624,8 @@ def stop_mostcentral_1s_repeat10(start_graph, current_stable_graph,
 def two_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
                                             stop_strategy_list,
                                             start_strategy_list,
-                                            strategy_idx):
+                                            strategy_idx,
+                                            nrepeat):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -641,7 +650,8 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
                                                         rate,
                                                         channel,
                                                         power,
-                                                        graph_params):
+                                                        graph_params,
+                                                        metricsseed):
 
     #######################################################################
     # Flush firewall rules
@@ -683,6 +693,19 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
     [rcode, cout, cerr] = run_command(stop_olsr_cmd)
 
+    print("Restore olsrd2 original configuration")
+    sys.stdout.flush()
+    restore_config_olsr_cmd = 'ansible-playbook ' +\
+                              'restore-olsr-orig-config.yaml ' +\
+                              '--extra-vars ' +\
+                              '"testbed=' + testbed + '"'
+
+    if verbose:
+        print(restore_config_olsr_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(restore_config_olsr_cmd)
+
     #######################################################################
     # Setup network interfaces
     print("Setting up network interfaces")
@@ -720,9 +743,9 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
     #######################################################################
     # Wait for olsr convergence
-    print("Sleep for 20 seconds...")
+    print("Sleep for 30 seconds...")
     sys.stdout.flush()
-    time.sleep(20)
+    time.sleep(30)
     print("Wait for olsr topology convergence...")
     current_graph, graph_stable = wait_for_stable_topology()
 
@@ -735,8 +758,9 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     # nodes_rules = graph_type(current_graph)
     # nodes_rules = 'nuc0-20:nuc0-43,nuc0-21;nuc0-43:nuc0-20,nuc0-21'
     # nodes_rules = '10.1.0.20:10.1.0.43;10.1.0.43:10.1.0.20'
-    nodes_rules, score = reducetopology.get_firewall_rules(current_graph,
-                                                           graph_params)
+    nodes_rules, nodes_metrics, score =\
+        reducetopology.get_firewall_rules(current_graph, graph_params,
+                                          seed=metricsseed)
 
     #######################################################################
     # Deploy the actual firewall rules using set-firewall-rules.yaml
@@ -752,14 +776,15 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     # sys.stdout.flush()
 
     # [rcode, cout, cerr] = run_command(firewall_cmd)
-    print("Computing firewall rules: %s" % (nodes_rules,))
+    print("Firewall rules: %s" % (nodes_rules,))
+    print("Constant metrics: %s" % (nodes_metrics,))
 
-    return nodes_rules
+    return nodes_rules, nodes_metrics
 
 
 verbose = False
 strategy_functions = [
-                    'stop_mostcentral_1s_repeat10',
+                    'stop_mostcentral_1s_repeat',
                     'stop_one_random_node_1s',
                     'one_node_stop_1s_5mostcentral',
                     'stop_one_node_1s_loop',
@@ -812,6 +837,15 @@ if __name__ == '__main__':
                         ' with the same name will be destroyed. '
                         '(e.g., for w.ILabt '
                         '/proj/wall2-ilabt-iminds-be/exp/olsrprince1/)')
+    parser.add_argument('--metricsseed', dest='metricsseed',
+                        type=int,
+                        help='Seed used to initialize the PRNG for extracting '
+                             'the links constant metrics')
+    parser.add_argument('--nrepeat', dest='nrepeat',
+                        type=int,
+                        help='How many times to repeat the selected kill '
+                             'strategy. The kill strategy function can '
+                             'ignore this parameter')
     parser.add_argument("-v", "--verbose", dest="verbose",
                         default=False, action="store_true")
     args = parser.parse_args()
@@ -824,6 +858,8 @@ if __name__ == '__main__':
     testbed = args.testbed
     resultsdir = args.resultsdir
     expname = args.expname
+    metricsseed = args.metricsseed
+    nrepeat = args.nrepeat
     verbose = args.verbose
 
     print('Experiment configuration for testbed %s:' % (testbed,))
@@ -831,6 +867,8 @@ if __name__ == '__main__':
     print('Network configuration: '
           'channel %d, rate %d, tx power %d, kill strategy %s' %
           (channel, legacyrate, txpower, killstrategy))
+    print('graph params: %s (metrics seed %d)' % (graphparams, metricsseed))
+    print('Kill strategy repetitions: %d' % (nrepeat,))
 
     #######################################################################
     # State variables initialization
@@ -851,12 +889,28 @@ if __name__ == '__main__':
 
     #######################################################################
     # Deploy firewall rules
-    nodes_rules =\
+    nodes_rules, nodes_metrics =\
         preliminary_net_setup_for_firewall_rules_deployment(testbed,
                                                             legacyrate,
                                                             channel,
                                                             txpower,
-                                                            graphparams)
+                                                            graphparams,
+                                                            metricsseed)
+
+    #######################################################################
+    # Deploy the new olsrd2 configuration files with the constant link metrics
+    print("Setting constant metrics")
+    sys.stdout.flush()
+    metrics_cmd = 'ansible-playbook set-constant-metrics.yaml ' +\
+                  '--extra-vars ' +\
+                  '"testbed=' + testbed + ' ' +\
+                  'metrics=' + nodes_metrics + '"'
+
+    if verbose:
+        print(metrics_cmd)
+    sys.stdout.flush()
+
+    [rcode, cout, cerr] = run_command(metrics_cmd)
 
     # Loop index
     while True:
@@ -1016,9 +1070,9 @@ if __name__ == '__main__':
 
         #######################################################################
         # Wait for olsr convergence
-        print("Sleep for 20 seconds...")
+        print("Sleep for 30 seconds...")
         sys.stdout.flush()
-        time.sleep(20)
+        time.sleep(30)
         print("Wait for olsr topology convergence...")
         current_start_graph, start_graph_stable = wait_for_stable_topology()
 
@@ -1073,7 +1127,8 @@ if __name__ == '__main__':
                                                   current_start_graph,
                                                   stop_strategy_list,
                                                   start_strategy_list,
-                                                  strategy_idx)
+                                                  strategy_idx,
+                                                  nrepeat)
 
         if len(stop_strategy_list) != len(start_strategy_list):
             raise Exception('stop_strategy_list and start_strategy_list ' +
