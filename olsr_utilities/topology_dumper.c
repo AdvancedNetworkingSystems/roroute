@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 		}
 
 		sprintf(perf_filename, "%s%s", base_filename, EXT_PERF);
-		perf_out = fopen(interval_filename, "w");
+		perf_out = fopen(perf_filename, "w");
 		fprintf(perf_out, "%lf %lu %lu\n", olsr_cpu, olsr_mem, olsr_vmem);
 		fprintf(perf_out, "%lf %lu %lu\n", prince_cpu, prince_mem, prince_vmem);
 		fclose(perf_out);
