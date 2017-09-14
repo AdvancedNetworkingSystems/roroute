@@ -12,4 +12,11 @@ else
 	host_name=`uci get system.@system[0].hostname`
 fi
 
-echo topology_dumper $1 $2 $3 $4_$host_name | at now
+olsr_pid=`pidof olsrd2_dynamic`
+prince_pid=`pidof prince`
+
+if [ -z "$prince_pid" ]; then
+	prince_pid="0"
+fi
+
+echo topology_dumper $1 $2 $3 $4_$host_name $olsr_pid $prince_pid | at now

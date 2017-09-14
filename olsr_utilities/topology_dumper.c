@@ -11,6 +11,7 @@
 #define EXT_TOPO ".topo"
 #define EXT_ROUTE ".route"
 #define EXT_INTERVAL ".int"
+#define EXT_PERF ".perf"
 
 char* get_olsr_data(const char *query)
 {
@@ -60,14 +61,19 @@ int main(int argc, char **argv) {
 	struct timespec wait_time;
 	struct timespec now;
 	struct timespec till_end;
-	FILE *topo_out, *route_out, *interval_out;
-	char base_filename[1024], topo_filename[1024], route_filename[1024], interval_filename[1024];
+	struct timespec last_cpu_meas, cpu_meas, cpu_time;
+	FILE *topo_out, *route_out, *interval_out, *perf_out;
+	char base_filename[1024], topo_filename[1024], route_filename[1024], interval_filename[1024], perf_filename[1024];
 	uint64_t argv_start_time, argv_stop_time, argv_interval;
 	char *argv_id;
 	int i;
+	pid_t olsr_pid, prince_pid;
+	stat_info olsr_info1, olsr_info2, prince_info1, prince_info2;
+	double olsr_cpu, prince_cpu;
+	uint64_t olsr_mem, olsr_vmem, prince_mem, prince_vmem;
 
-	if (argc != 5) {
-		printf("Usage: %s <start time in unix time> <stop time in unix time> <interval in ms> <output prefix>\n", argv[0]);
+	if (argc != 7) {
+		printf("Usage: %s <start time in unix time> <stop time in unix time> <interval in ms> <output prefix> <olsr pid> <prince pid>\n", argv[0]);
 		exit(1);
 	}
 
@@ -85,6 +91,9 @@ int main(int argc, char **argv) {
 
 	argv_id = argv[4];
 
+	sscanf(argv[5], "%" SCNd32, &olsr_pid);
+	sscanf(argv[6], "%" SCNd32, &prince_pid);
+
 	next = start_time;
 
 	i = 0;
@@ -92,6 +101,10 @@ int main(int argc, char **argv) {
 	last_routing_table = 0;
 	last_hello = 0;
 	last_tc = 0;
+	prince_mem = 0;
+	prince_vmem = 0;
+	prince_cpu = 0;
+	olsr_cpu = 0;
 	int sign;
 	do {
 		timespec_get(&now, TIME_UTC);
@@ -106,6 +119,25 @@ int main(int argc, char **argv) {
 		remove_newline(hello);
 		tc = get_olsr_data(REQ_TC);
 		remove_newline(tc);
+
+		get_mem_info(olsr_pid, &olsr_mem, &olsr_vmem);
+		get_proc_info(olsr_pid, &olsr_info2);
+		if (prince_pid != 0) {
+			get_mem_info(prince_pid, &prince_mem, &prince_vmem);
+			get_proc_info(prince_pid, &prince_info2);
+		}
+		timespec_get(&cpu_meas, TIME_UTC);
+
+		if (i != 0) {
+			timespec_diff(&last_cpu_meas, &cpu_meas, &cpu_time);
+			olsr_cpu = get_cpu_perc(&olsr_info1, &olsr_info2, &cpu_time);
+			if (prince_pid != 0) {
+				prince_cpu = get_cpu_perc(&prince_info1, &prince_info2, &cpu_time);
+			}
+		}
+		olsr_info1 = olsr_info2;
+		prince_info1 = prince_info2;
+		last_cpu_meas = cpu_meas;
 
 		timespec_get(&now, TIME_UTC);
 		sprintf(base_filename, "%s_%06d_%lld_%09lld", argv_id, i, (long long)now.tv_sec, (long long)now.tv_nsec);
@@ -146,6 +178,12 @@ int main(int argc, char **argv) {
 			free(hello);
 			free(tc);
 		}
+
+		sprintf(perf_filename, "%s%s", base_filename, EXT_PERF);
+		perf_out = fopen(interval_filename, "w");
+		fprintf(perf_out, "%lf %lu %lu\n", olsr_cpu, olsr_mem, olsr_vmem);
+		fprintf(perf_out, "%lf %lu %lu\n", prince_cpu, prince_mem, prince_vmem);
+		fclose(perf_out);
 
 		i++;
 		timespec_sum(&next, &interval, &next);
