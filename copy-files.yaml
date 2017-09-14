@@ -9,6 +9,9 @@
   - unarchive:
       src: "/tmp/files.bzip"
       dest: "{{ ansible_env.HOME }}/"
+  - file:
+      path: /tmp/files.bzip
+      state: absent
   - name: copy etchosts
     command: "/usr/bin/env sh copy-etchosts.sh"
     args:

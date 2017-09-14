@@ -24,14 +24,14 @@ if [ -z "$opkg_path" ]; then
 	cat OONF/src/olsrd2/debian/olsrd2.init | sed \
 		-e 's/^DAEMON=.*$/DAEMON=\/usr\/bin\/olsrd2_dynamic/' > \
 		/tmp/olsrd2.init
-	sudo cp /tmp/olsrd2.init /etc/init.d/olsrd2
+	sudo mv /tmp/olsrd2.init /etc/init.d/olsrd2
 
 	cat OONF/src/olsrd2/debian/olsrd2.service | sed \
 		-e 's/\(^.*\)olsrd2_static\(.*$\)/\1olsrd2_dynamic\2/' > \
 		/tmp/olsrd2.service
-	sudo cp /tmp/olsrd2.service /etc/systemd/system/
+	sudo mv /tmp/olsrd2.service /etc/systemd/system/
 	sudo mkdir -p /etc/olsrd2/
-	sudo cp olsrd2.conf /etc/olsrd2/
+	sudo mv olsrd2.conf /etc/olsrd2/
 	sudo /bin/systemctl daemon-reload
 else
 	olsrd2_path=`which olsrd2`
