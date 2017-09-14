@@ -250,32 +250,49 @@ def get_firewall_rules(graph, generator_string, seed=0, display=False):
     synt_sm = map(lambda x: x[0], sd)
     synt_matrix = __get_matrix(synt_am, synt_sm)
 
-    # transform the testbed topology in the synthetic topology by performing
-    # a logical and
-    experiment_matrix = __matrix_and(testbed_matrix, synt_matrix)
-    # count the number of non matching entries. 1 means perfect match,
-    # 0 means no link could be matched
-    score = __matching_score(experiment_matrix, synt_matrix)
+    best_score = -1
+    best_matrix = None
+    best_mapping = None
+    n_attempts = 10
+
+    random.seed(0)
+    # if the matching using the heuristic didn't work, simply try n times
+    # with random shuffling
+    while best_score < 1 and n_attempts > 0:
+        n_attempts -= 1
+        # transform the testbed topology in the synthetic topology by performing
+        # a logical and
+        experiment_matrix = __matrix_and(testbed_matrix, synt_matrix)
+        # count the number of non matching entries. 1 means perfect match,
+        # 0 means no link could be matched
+        score = __matching_score(experiment_matrix, synt_matrix)
+        if score > best_score:
+            best_score = score
+            best_matrix = experiment_matrix
+            best_mapping = testbed_sm
+
+        testbed_sm = range(len(testbed_g.nodes()))
+        random.shuffle(testbed_sm)
+        testbed_matrix = __get_matrix(testbed_am, testbed_sm)
 
     if display:
         # do this heretic thing to avoid installing matplotlib on testbed
         # nodes if not really required
         import matplotlib.pyplot as plt
-        experiment_g = nx.from_scipy_sparse_matrix(experiment_matrix)
+        experiment_g = nx.from_scipy_sparse_matrix(best_matrix)
         nx.draw_circular(synt_g)
         nx.draw_circular(experiment_g, width=3, edge_color='r')
         plt.show()
 
     # given the experiment matrix and the nodes of the testbed, get the links
     # that must be disabled to obtain the desired topology
-    disabled_links = __get_links(experiment_matrix, testbed_sm,
-                                 testbed_g.nodes())
+    disabled_links = __get_links(best_matrix, best_mapping, testbed_g.nodes())
     # transform this into a string usable by the scripts
     rules = __stringify_disabled_links(disabled_links)
 
-    link_costs = __add_link_costs(__get_links(experiment_matrix, testbed_sm,
+    link_costs = __add_link_costs(__get_links(best_matrix, best_mapping,
                                               testbed_g.nodes(), False), seed)
     costs = __stringify_link_costs(link_costs)
 
     # we return the configuration string and the measure of the match
-    return rules, costs, score
+    return rules, costs, best_score
