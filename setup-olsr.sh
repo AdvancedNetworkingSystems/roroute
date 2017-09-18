@@ -6,10 +6,10 @@ if [ -z "$opkg_path" ]; then
 	sudo apt-get install -y git cmake
 
 	if [ ! -d OONF ]; then
-		git clone https://github.com/OLSR/OONF.git
+		git clone https://github.com/AdvancedNetworkingSystems/OONF.git
 		cd OONF
 		#git checkout 88b68eef207bc76e448bf4237da09180514f7a2d
-		git checkout 79363d24
+		git checkout netjsoninfo-fix
 		mkdir -p build
 		cd build
 		cmake ..
