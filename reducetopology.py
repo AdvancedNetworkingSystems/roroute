@@ -111,8 +111,8 @@ def __add_link_costs(enabled_links, seed):
     :param seed: a seed used to initialize the PRNGs
     :return: the dictionary with randomized link costs
     """
-    link_step = 50
-    n_costs = 1000
+    link_step = 16
+    n_costs = 100
     random.seed(seed)
     lc = dict()
     for node, neighbors in enabled_links.iteritems():

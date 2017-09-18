@@ -304,7 +304,10 @@ def wait_for_stable_topology():
             if lcost_str.startswith('0x'):
                 lcost = float(int(lcost_str, 16))
             else:
-                lcost = float(lcost_str)
+                if lcost_str.endswith('k'):
+                    lcost = float(lcost_str.replace('k', '')) * 1000
+                else:
+                    lcost = float(lcost_str)
             # lcost = float(l['cost'])
             current_graph.add_edge(l['source'], l['target'], weight=lcost)
 
@@ -651,7 +654,8 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
                                                         channel,
                                                         power,
                                                         graph_params,
-                                                        metricsseed):
+                                                        metricsseed,
+                                                        expdir):
 
     #######################################################################
     # Flush firewall rules
@@ -748,6 +752,14 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     time.sleep(30)
     print("Wait for olsr topology convergence...")
     current_graph, graph_stable = wait_for_stable_topology()
+
+    #######################################################################
+    # Save quasi-full-mesh graph
+    quasi_full_mesh_graph_fn = expdir + '/quasi_full_mesh_graph.graphml'
+    print('Saving stable graph without firewall rules: %s' %
+          (quasi_full_mesh_graph_fn,))
+    sys.stdout.flush()
+    nx.write_graphml(current_graph, quasi_full_mesh_graph_fn)
 
     # if not graph_stable:
     #    probably we should rise an exception
@@ -895,7 +907,9 @@ if __name__ == '__main__':
                                                             channel,
                                                             txpower,
                                                             graphparams,
-                                                            metricsseed)
+                                                            metricsseed,
+                                                            homedir + '/' +
+                                                            expname)
 
     #######################################################################
     # Deploy the new olsrd2 configuration files with the constant link metrics
