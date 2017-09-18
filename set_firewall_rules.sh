@@ -31,8 +31,8 @@ do
 		for iptd in $(echo ${ip_to_drop} | sed -e "s/,/ /g")
 		do
 			# ip_to_drop=$(cat /etc/hosts | grep ${ntd} | cut -d ' ' -f 1)
-			echo "$(which sudo) $iptables_cmd -I INPUT -i poprow0 -s ${iptd} -j DROP"
-			$(which sudo) $iptables_cmd -I INPUT -i poprow0 -s ${iptd} -j DROP
+			echo "$(which sudo) $iptables_cmd -I INPUT -i poprow0 -m mac --mac-source $mac -j DROP"
+			$(which sudo) $iptables_cmd -I INPUT -i poprow0 -m mac --mac-source $mac -j DROP
 		done
 	fi
 done
