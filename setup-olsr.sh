@@ -8,7 +8,8 @@ if [ -z "$opkg_path" ]; then
 	if [ ! -d OONF ]; then
 		git clone https://github.com/OLSR/OONF.git
 		cd OONF
-		git checkout 88b68eef207bc76e448bf4237da09180514f7a2d
+		#git checkout 88b68eef207bc76e448bf4237da09180514f7a2d
+		git checkout 79363d24
 		mkdir -p build
 		cd build
 		cmake ..
@@ -31,7 +32,7 @@ if [ -z "$opkg_path" ]; then
 		/tmp/olsrd2.service
 	sudo mv /tmp/olsrd2.service /etc/systemd/system/
 	sudo mkdir -p /etc/olsrd2/
-	sudo mv olsrd2.conf /etc/olsrd2/
+	sudo cp olsrd2.conf /etc/olsrd2/
 	sudo /bin/systemctl daemon-reload
 else
 	olsrd2_path=`which olsrd2`
