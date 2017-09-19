@@ -57,8 +57,13 @@ metrics_out=$(cat <<EOF
       bindto        default_accept
       hello_interval 2.0
 
+[domain]
+      mpr           -
+      willingness   15
+
 [nhdp]
-     mpr           '-'
+      mpr           -
+      willingness   15
 
 [remotecontrol]
       acl           default_accept
