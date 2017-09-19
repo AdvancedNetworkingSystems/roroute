@@ -34,6 +34,22 @@ if [ -z "$opkg_path" ]; then
 	sudo mkdir -p /etc/olsrd2/
 	sudo cp olsrd2.conf /etc/olsrd2/
 	sudo /bin/systemctl daemon-reload
+
+	if [ ! -d olsrd ]; then
+		git clone https://github.com/OLSR/olsrd.git
+		cd olsrd
+		git checkout 195a11115fa971c27fedc6bfce58665ab86b2008
+		make -j 4 build_all
+		sudo ln -s $PWD/olsrd /usr/sbin/olsrd
+		sudo cp lib/*/*.so.* /usr/local/lib
+		cd ../../
+	fi
+
+	sudo mv /olsrd.service /etc/systemd/system
+	sudo mkdir -p /etc/olsrd/
+	sudo cp olsrd.conf /etc/olsrd/
+	sudo /bin/systemctl daemon-reload
+
 else
 	olsrd2_path=`which olsrd2`
 	if [ "$olsrd2_path" == "" ]; then

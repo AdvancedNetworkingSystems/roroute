@@ -1,0 +1,10 @@
+[Unit]
+Description=OLSRd version 1 Routing agent
+Documentation=http://www.olsr.org/
+Requires=networking.service
+
+[Service]
+ExecStart=/usr/sbin/olsrd -i poprow0 -f /etc/olsrd/olsrd.conf
+
+[Install]
+WantedBy=multi-user.target

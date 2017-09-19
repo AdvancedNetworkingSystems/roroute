@@ -1,0 +1,7 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: start olsrd version 1
+    command: "/usr/bin/env sh start-olsr-v1.sh {{ testbed }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
