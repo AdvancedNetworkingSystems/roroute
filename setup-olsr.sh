@@ -8,16 +8,20 @@ if [ -z "$opkg_path" ]; then
 	if [ ! -d OONF ]; then
 		git clone https://github.com/AdvancedNetworkingSystems/OONF.git
 		cd OONF
-		#git checkout 88b68eef207bc76e448bf4237da09180514f7a2d
-		git checkout netjsoninfo-fix
+		#git checkout netjsoninfo-fix-disable-mpr-plugin
+		git checkout v0.14.1
 		mkdir -p build
 		cd build
 		cmake ..
-		make
-		sudo ln -s $PWD/olsrd2_static /usr/sbin/olsrd2_static
-		sudo ln -s $PWD/olsrd2_dynamic /usr/sbin/olsrd2_dynamic
-		sudo ln -s $PWD/olsrd2 /usr/sbin/olsrd2_dynamic
+		make -j 4
 		cd ../..
+	fi
+
+	if [ -L /usr/sbin/olsrd2_static ]; then
+		sudo rm /usr/sbin/olsrd2_static
+		sudo rm /usr/sbin/olsrd2_dynamic
+		sudo ln -s $PWD/OONF/build/olsrd2_static /usr/sbin/olsrd2_static
+		sudo ln -s $PWD/OONF/build/olsrd2_dynamic /usr/sbin/olsrd2_dynamic
 	fi
 
 	# In order to use the remotecontrol plugin (required for the config
@@ -31,6 +35,10 @@ if [ -z "$opkg_path" ]; then
 		-e 's/\(^.*\)olsrd2_static\(.*$\)/\1olsrd2_dynamic\2/' > \
 		/tmp/olsrd2.service
 	sudo mv /tmp/olsrd2.service /etc/systemd/system/
+
+	# sudo cp OONF/src/olsrd2/debian/olsrd2.init /etc/init.d/olsrd2
+	# sudo cp OONF/src/olsrd2/debian/olsrd2.service /etc/systemd/system/
+
 	sudo mkdir -p /etc/olsrd2/
 	sudo cp olsrd2.conf /etc/olsrd2/
 	sudo /bin/systemctl daemon-reload
