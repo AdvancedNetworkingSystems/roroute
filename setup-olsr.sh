@@ -20,9 +20,9 @@ if [ -z "$opkg_path" ]; then
 	if [ -L /usr/sbin/olsrd2_static ]; then
 		sudo rm /usr/sbin/olsrd2_static
 		sudo rm /usr/sbin/olsrd2_dynamic
-		sudo ln -s $PWD/OONF/build/olsrd2_static /usr/sbin/olsrd2_static
-		sudo ln -s $PWD/OONF/build/olsrd2_dynamic /usr/sbin/olsrd2_dynamic
 	fi
+	sudo ln -s $PWD/OONF/build/olsrd2_static /usr/sbin/olsrd2_static
+	sudo ln -s $PWD/OONF/build/olsrd2_dynamic /usr/sbin/olsrd2_dynamic
 
 	# In order to use the remotecontrol plugin (required for the config
 	# command) the olsrd2 service must call olsrd2_dynamic
@@ -44,16 +44,22 @@ if [ -z "$opkg_path" ]; then
 	sudo /bin/systemctl daemon-reload
 
 	if [ ! -d olsrd ]; then
+		# required to build all plugins
+		sudo apt-get install libgps-dev
 		git clone https://github.com/OLSR/olsrd.git
 		cd olsrd
 		git checkout 195a11115fa971c27fedc6bfce58665ab86b2008
 		make -j 4 build_all
-		sudo ln -s $PWD/olsrd /usr/sbin/olsrd
 		sudo cp lib/*/*.so.* /usr/local/lib
-		cd ../../
+		cd ..
 	fi
 
-	sudo mv /olsrd.service /etc/systemd/system
+	if [ -L /usr/sbin/olsrd ]; then
+		sudo rm /usr/sbin/olsrd
+	fi
+	sudo ln -s $PWD/olsrd/olsrd /usr/sbin/olsrd
+
+	sudo cp olsrd.service /etc/systemd/system
 	sudo mkdir -p /etc/olsrd/
 	sudo cp olsrd.conf /etc/olsrd/
 	sudo /bin/systemctl daemon-reload
