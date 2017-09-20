@@ -4,7 +4,7 @@ Documentation=http://www.olsr.org/
 Requires=networking.service
 
 [Service]
-ExecStart=/usr/sbin/olsrd -i poprow0 -f /etc/olsrd/olsrd.conf
+ExecStart=/usr/sbin/olsrd -i poprow0 -f /etc/olsrd/olsrd.conf -nofork
 
 [Install]
 WantedBy=multi-user.target
