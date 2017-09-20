@@ -1,7 +1,7 @@
 ---
 - hosts: "{{ testbed | default('twist') }}"
   tasks:
-  - name: restore olsrd2 original configuration
+  - name: restore olsr original configuration
     command: "/usr/bin/env sh restore-olsr-orig-config.sh"
     args:
       chdir: "{{ ansible_env.HOME }}"

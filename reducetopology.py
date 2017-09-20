@@ -102,7 +102,7 @@ def __get_links(m, sorted_map, nodes, disabled=True):
     return dl
 
 
-def __add_link_costs(enabled_links, seed):
+def __add_link_costs(enabled_links, seed, olsrv1=False):
     """
     Given the dictionary of enabled links, return a dictionary of tuples
     where the first item of the tuple is the IP of the neighbor and the
@@ -111,8 +111,14 @@ def __add_link_costs(enabled_links, seed):
     :param seed: a seed used to initialize the PRNGs
     :return: the dictionary with randomized link costs
     """
-    link_step = 16
-    n_costs = 100
+    if olsrv1:
+        link_step = 0.05
+        n_costs = 10
+        min_cost = 0.5
+    else:
+        link_step = 16
+        n_costs = 100
+        min_cost = 16
     random.seed(seed)
     lc = dict()
     for node, neighbors in enabled_links.iteritems():
@@ -125,7 +131,8 @@ def __add_link_costs(enabled_links, seed):
                         r_cost = cost
 
             if r_cost == -1:
-                r_cost = random.randint(1, n_costs) * link_step
+                r_cost = random.randint(0, n_costs) *\
+                         link_step + min_cost
 
             lc[node].append((neigh, r_cost))
     return lc
@@ -182,7 +189,8 @@ def print_matrix(m, mapping=None):
         sys.stdout.write("\n")
 
 
-def get_firewall_rules(graph, generator_string, seed=0, display=False):
+def get_firewall_rules(graph, generator_string, seed=0,
+                       olsrv1=False, display=False):
     """
     Given a networkx graph representing the real topology of a testbed, returns
     the firewall rules to be applied to obtain a synthetic topology with the

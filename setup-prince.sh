@@ -7,6 +7,7 @@ if [ -z "$opkg_path" ]; then
 
 	if [ ! -d poprouting ]; then
 		git clone https://github.com/AdvancedNetworkingSystems/poprouting.git
+		git checkout refactor_ospf
 	else
 		cd poprouting
 		make clean
@@ -15,13 +16,14 @@ if [ -z "$opkg_path" ]; then
 	fi
 
 	cd poprouting
-	# Fix LDFLAGS in Makefile (this was tested for commit 1b1fa863c4bb88d3)
-	cat Makefile | sed \
-		-e 's/\(^.*\)\$(LDFLAGS) \$(CFLAGS)\(.*$\)/\1 \$(CFLAGS) \2 \$(LDFLAGS)/' \
-		-e 's/^CFLAGS\(.*$\)/LDFLAGS\1/' > Makefile.tmp && \
-		mv Makefile.tmp Makefile
 
-	# We use IPv4 not IPv6
+	# Fix LDFLAGS in Makefile (this was tested for commit 1b1fa863c4bb88d3)
+	# cat Makefile | sed \
+	# 	-e 's/\(^.*\)\$(LDFLAGS) \$(CFLAGS)\(.*$\)/\1 \$(CFLAGS) \2 \$(LDFLAGS)/' \
+	# 	-e 's/^CFLAGS\(.*$\)/LDFLAGS\1/' > Makefile.tmp && \
+	# 	mv Makefile.tmp Makefile
+
+	# # We use IPv4 not IPv6
 	cat prince/src/oonf.c | sed -e 's/\(^.*\)ipv6_0\(.*$\)/\1ipv4_0\2/' > \
 		/tmp/oonf.c && mv /tmp/oonf.c prince/src/oonf.c
 
@@ -29,6 +31,7 @@ if [ -z "$opkg_path" ]; then
 
 	if [ -L /usr/lib/libprince_oonf_c.so ]; then
 		sudo rm /usr/lib/libprince_oonf_c.so
+		sudo rm /usr/lib/libprince_olsr.so
 	fi
 
 	if [ -L /usr/bin/prince ]; then
@@ -36,6 +39,7 @@ if [ -z "$opkg_path" ]; then
 	fi
 
 	sudo ln -s $PWD/output/libprince_oonf_c.so /usr/lib/libprince_oonf_c.so
+	sudo ln -s $PWD/output/libprince_olsr.so /usr/lib/libprince_olsr.so
 	sudo ln -s $PWD/output/prince /usr/bin/prince
 
 	cd ..
