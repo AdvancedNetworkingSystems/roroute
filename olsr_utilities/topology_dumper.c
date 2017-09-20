@@ -4,20 +4,26 @@
 
 #define HOST "127.0.0.1"
 #define PORT 2009
+#define PORT_V1 9090
+#define POP_PORT 1234
 #define REQ_TOPOLOGY "/netjsoninfo filter graph ipv4_0/quit\n"
+#define REQ_TOPOLOGY_V1 "/topology\n"
 #define REQ_ROUTE "/netjsoninfo filter route ipv4_0/quit\n"
+#define REQ_ROUTE_V1 "/routes\n"
 #define REQ_HELLO "/config get interface.hello_interval/quit\n"
+#define REQ_HELLO_V1 "/HelloTimer\n"
 #define REQ_TC "/config get olsrv2.tc_interval/quit\n"
+#define REQ_TC_V1 "/TcTimer\n"
 #define EXT_TOPO ".topo"
 #define EXT_ROUTE ".route"
 #define EXT_INTERVAL ".int"
 #define EXT_PERF ".perf"
 
-char* get_olsr_data(const char *query)
+char* get_olsr_data(const char *query, int port)
 {
 	int sd, sent;
 	char *recv_buffer = 0;
-	if((sd = _create_socket(HOST, PORT))==0){
+	if((sd = _create_socket(HOST, port))==0){
 		goto exit_err;
 	}
 	if( (sent = send(sd, query, strlen(query), MSG_NOSIGNAL))==-1){
@@ -50,6 +56,15 @@ void remove_newline(char *str) {
 		str[i] = str[i+1];
 }
 
+char *strip_response(char *response, const char *tag) {
+	char *start = strstr(response, tag);
+	char *ret = malloc(sizeof(char) * strlen(response));
+	strcpy(ret + 1, start);
+	ret[0] = '{';
+	free(response);
+	return ret;
+}
+
 int main(int argc, char **argv) {
 
 	char *topology, *routing_table, *hello, *tc;
@@ -71,9 +86,10 @@ int main(int argc, char **argv) {
 	stat_info olsr_info1, olsr_info2, prince_info1, prince_info2;
 	double olsr_cpu, prince_cpu;
 	uint64_t olsr_mem, olsr_vmem, prince_mem, prince_vmem;
+	int olsr_version;
 
-	if (argc != 7) {
-		printf("Usage: %s <start time in unix time> <stop time in unix time> <interval in ms> <output prefix> <olsr pid> <prince pid>\n", argv[0]);
+	if (argc != 8) {
+		printf("Usage: %s <start time in unix time> <stop time in unix time> <interval in ms> <output prefix> <olsr pid> <prince pid> <olsr version (1 or 2)>\n", argv[0]);
 		exit(1);
 	}
 
@@ -94,7 +110,16 @@ int main(int argc, char **argv) {
 	sscanf(argv[5], "%" SCNd32, &olsr_pid);
 	sscanf(argv[6], "%" SCNd32, &prince_pid);
 
+	sscanf(argv[7], "%" SCNd32, &olsr_version);
+
 	next = start_time;
+
+	char *rq_topo = olsr_version == 1 ? REQ_TOPOLOGY_V1 : REQ_TOPOLOGY;
+	char *rq_route = olsr_version == 1 ? REQ_ROUTE_V1 : REQ_ROUTE;
+	char *rq_hello = olsr_version == 1 ? REQ_HELLO_V1 : REQ_HELLO;
+	char *rq_tc = olsr_version == 1 ? REQ_TC_V1 : REQ_TC;
+	int port = olsr_version == 1 ? PORT_V1 : PORT;
+	int pop_port = olsr_version == 1 ? POP_PORT : PORT;
 
 	i = 0;
 	last_topology = 0;
@@ -113,12 +138,18 @@ int main(int argc, char **argv) {
 			nanosleep(&wait_time, 0);
 		else
 			next = now;
-		topology = get_olsr_data(REQ_TOPOLOGY);
-		routing_table = get_olsr_data(REQ_ROUTE);
-		hello = get_olsr_data(REQ_HELLO);
-		remove_newline(hello);
-		tc = get_olsr_data(REQ_TC);
-		remove_newline(tc);
+		topology = get_olsr_data(rq_topo, port);
+		if (olsr_version == 1)
+			topology = strip_response(topology, "\"topology\"");
+		routing_table = get_olsr_data(rq_route, port);
+		if (olsr_version == 1)
+			routing_table = strip_response(routing_table, "\"routes\"");
+		hello = get_olsr_data(rq_hello, pop_port);
+		if (olsr_version == 2)
+			remove_newline(hello);
+		tc = get_olsr_data(rq_tc, pop_port);
+		if (olsr_version == 2)
+			remove_newline(tc);
 
 		get_mem_info(olsr_pid, &olsr_mem, &olsr_vmem);
 		get_proc_info(olsr_pid, &olsr_info2);

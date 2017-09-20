@@ -13,11 +13,14 @@
   - name: set interval
     set_fact:
       interval: "100"
+  - name: set olsr version
+    set_fact:
+      version: 2
   - name: set working directory
     set_fact:
       workdir: ""
   - name: start dumper
-    command: "start_topology_dumper {{ start }} {{ stop }} {{ interval }} {{ prefix }}"
+    command: "start_topology_dumper {{ start }} {{ stop }} {{ interval }} {{ prefix }} {{ version }}"
     args:
       chdir: "{{ workdir }}"
 
