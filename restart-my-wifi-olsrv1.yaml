@@ -1,0 +1,25 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set rate
+    set_fact:
+      rate: "54"
+  - name: set channel
+    set_fact:
+      channel: "1"
+  - name: set power
+    set_fact:
+      power: "2000"
+  - name: set prince conf
+    set_fact:
+      prince_conf: "none"
+  - name: set start time
+    set_fact:
+      start: "0"
+  - name: set kill times
+    set_fact:
+      nodes: ""
+  - name: schedule wifi restart
+    command: "/usr/bin/env sh restart_my_wifi_olsrv1.sh {{ testbed }} {{ rate }} {{ channel }} {{ power }} {{ prince_conf }} {{ nodes }} {{ start }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"

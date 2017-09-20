@@ -1,0 +1,12 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set nodes string
+    set_fact:
+      metrics: ""
+  - name: deploy constant metrics
+    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }}"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
+
+
