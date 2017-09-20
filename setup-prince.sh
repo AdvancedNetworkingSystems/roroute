@@ -7,7 +7,9 @@ if [ -z "$opkg_path" ]; then
 
 	if [ ! -d poprouting ]; then
 		git clone https://github.com/AdvancedNetworkingSystems/poprouting.git
+		cd poprouting
 		git checkout refactor_ospf
+		cd ..
 	else
 		cd poprouting
 		make clean
@@ -31,6 +33,7 @@ if [ -z "$opkg_path" ]; then
 
 	if [ -L /usr/lib/libprince_oonf_c.so ]; then
 		sudo rm /usr/lib/libprince_oonf_c.so
+		sudo rm /usr/lib/libprince_test.so
 		sudo rm /usr/lib/libprince_olsr.so
 	fi
 
@@ -40,6 +43,7 @@ if [ -z "$opkg_path" ]; then
 
 	sudo ln -s $PWD/output/libprince_oonf_c.so /usr/lib/libprince_oonf_c.so
 	sudo ln -s $PWD/output/libprince_olsr.so /usr/lib/libprince_olsr.so
+	sudo ln -s $PWD/output/libprince_test.so /usr/lib/libprince_test.so
 	sudo ln -s $PWD/output/prince /usr/bin/prince
 
 	cd ..

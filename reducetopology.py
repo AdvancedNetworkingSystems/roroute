@@ -152,7 +152,7 @@ def __stringify_disabled_links(disabled_links):
     return merge_all
 
 
-def __stringify_link_costs(link_costs):
+def __stringify_link_costs(link_costs, olsrv1=False):
     """
     Transforms the dictionary computed by the __add_link_costs method
     into a configuration string for the experiments
@@ -161,8 +161,12 @@ def __stringify_link_costs(link_costs):
     """
     costs = []
     for node, neighbors in link_costs.iteritems():
-        node_costs = ','.join(["%s-%d" % (neigh, cost)
-                               for (neigh, cost) in neighbors])
+        if olsrv1:
+            node_costs = ','.join(["%s-%.2f" % (neigh, cost)
+                                   for (neigh, cost) in neighbors])
+        else:
+            node_costs = ','.join(["%s-%d" % (neigh, cost)
+                                   for (neigh, cost) in neighbors])
         costs.append("%s:%s" % (node, node_costs))
     return ';'.join(costs)
 
@@ -299,8 +303,9 @@ def get_firewall_rules(graph, generator_string, seed=0,
     rules = __stringify_disabled_links(disabled_links)
 
     link_costs = __add_link_costs(__get_links(best_matrix, best_mapping,
-                                              testbed_g.nodes(), False), seed)
-    costs = __stringify_link_costs(link_costs)
+                                              testbed_g.nodes(),
+                                              False), seed, olsrv1=olsrv1)
+    costs = __stringify_link_costs(link_costs, olsrv1=olsrv1)
 
     # we return the configuration string and the measure of the match
     return rules, costs, best_score

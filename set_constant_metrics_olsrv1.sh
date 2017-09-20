@@ -55,7 +55,7 @@ ${metrics_out}
 EOF
 )
 
-echo "${metrics_out}" > /tmp/olsrd.conf
+echo "${metrics_out}" | sudo tee /tmp/olsrd.conf
 
 opkg_path=`which opkg`
 if [ -z "$opkg_path" ]; then

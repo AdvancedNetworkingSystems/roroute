@@ -85,7 +85,7 @@ def convert_nodes_id_to_hostname(strategy_str):
             ip = ip_hostname[0]
             hostname = ip_hostname[1]
             hostname = hostname.split('pop-')[1]
-            nodeids_hostname_dict['id_' + ip] = hostname.strip('\n')
+            nodeids_hostname_dict[ip] = hostname.strip('\n')
 
     for nt in nodeids_times:
         nodeid, nodetime = nt.split('@')
@@ -697,7 +697,8 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     # nodes_rules = '10.1.0.20:10.1.0.43;10.1.0.43:10.1.0.20'
     nodes_rules, nodes_metrics, score =\
         reducetopology.get_firewall_rules(current_graph, graph_params,
-                                          seed=metricsseed)
+                                          seed=metricsseed,
+                                          olsrv1=True)
 
     #######################################################################
     # Deploy the actual firewall rules using set-firewall-rules.yaml
