@@ -45,7 +45,7 @@ if [ -z "$opkg_path" ]; then
 
 	if [ ! -d olsrd ]; then
 		# required to build all plugins
-		sudo apt-get install libgps-dev
+		sudo apt-get install -y libgps-dev
 		git clone https://github.com/OLSR/olsrd.git
 		cd olsrd
 		git checkout 195a11115fa971c27fedc6bfce58665ab86b2008
