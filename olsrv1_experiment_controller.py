@@ -612,7 +612,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 
     print("Killing olsr")
     sys.stdout.flush()
-    stop_olsr_cmd = 'ansible-playbook stop-olsrv1.yaml ' +\
+    stop_olsr_cmd = 'ansible-playbook stop-olsr.yaml ' +\
                     '--extra-vars ' +\
                     '"testbed=' + testbed + '"'
 
@@ -886,7 +886,7 @@ if __name__ == '__main__':
 
         print("Killing olsr")
         sys.stdout.flush()
-        stop_olsr_cmd = 'ansible-playbook stop-olsrv1.yaml ' +\
+        stop_olsr_cmd = 'ansible-playbook stop-olsr.yaml ' +\
                         '--extra-vars ' +\
                         '"testbed=' + testbed + '"'
 
