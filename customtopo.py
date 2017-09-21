@@ -53,3 +53,29 @@ def ring_graph(n):
         g.add_edge(i, i+1)
     g.add_edge(0, n-1)
     return g
+
+
+def shortcut_graph(n, l):
+    """
+    Generate a graph with two chains are connected together in this way:
+    0 -- 1 -- 2 -------------- 3 -- 4 -- 5
+              |                |
+              6 - 7 - 8 - 9 - 10
+    :param n: total number of nodes
+    :param l: number of nodes in the lower chain. must be an odd number
+    :return: a networkx graph with the given topology
+    """
+    assert(l % 2 == 1)
+    assert(l > 3)
+    assert(n - l >= 2)
+    g = nx.empty_graph(n, create_using=nx.Graph())
+    # create upper chain
+    for i in range(n - l - 1):
+        g.add_edge(i, i+1)
+    # create lower chain
+    for i in range(n - l, n - 1):
+        g.add_edge(i, i+1)
+    # connect the two chains together
+    g.add_edge((n-l)/2-1, n-l)
+    g.add_edge((n-l)/2, n-1)
+    return g
