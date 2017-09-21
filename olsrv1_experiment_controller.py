@@ -1100,7 +1100,7 @@ if __name__ == '__main__':
                              'start=' + str(dumper_start_time) + ' ' +\
                              'stop=' + str(dumper_stop_time) + ' ' +\
                              'prefix=' + expname + ' ' +\
-                             'interval=' + '100' + ' ' +\
+                             'interval=' + '300' + ' ' +\
                              'version=1' + ' ' +\
                              'workdir=' + iter_results_dir_name + '"'
 
