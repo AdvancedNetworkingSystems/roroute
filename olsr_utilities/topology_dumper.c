@@ -61,6 +61,10 @@ int compare(const char *s1, const char *s2, const char *tag) {
 		return strcmp(s1, s2);
 	char *tag1 = strstr(s1, tag);
 	char *tag2 = strstr(s2, tag);
+	if (!tag1 && !tag2)
+		return 0;
+	if (!tag1 || !tag2)
+		return 1;
 	return strcmp(tag1, tag2);
 }
 
