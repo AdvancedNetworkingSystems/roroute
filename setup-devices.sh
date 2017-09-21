@@ -27,7 +27,8 @@ else
 	cd ../
 	${SUDO} pip install scipy
 fi
-${SUDO} pip install pyric pyroute2 ipaddr networkx netdiff
+${SUDO} pip install pyric pyroute2 ipaddr netdiff
+${SUDO} pip install networkx==1.11
 
 # patch a mistake in the official release of pyric
 if [ $tplink -eq 1 ]; then
