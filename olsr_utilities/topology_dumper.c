@@ -56,13 +56,12 @@ void remove_newline(char *str) {
 		str[i] = str[i+1];
 }
 
-char *strip_response(char *response, const char *tag) {
-	char *start = strstr(response, tag);
-	char *ret = malloc(sizeof(char) * strlen(response));
-	strcpy(ret + 1, start);
-	ret[0] = '{';
-	free(response);
-	return ret;
+int compare(const char *s1, const char *s2, const char *tag) {
+	if (tag == 0)
+		return strcmp(s1, s2);
+	char *tag1 = strstr(s1, tag);
+	char *tag2 = strstr(s2, tag);
+	return strcmp(tag1, tag2);
 }
 
 int main(int argc, char **argv) {
@@ -139,11 +138,7 @@ int main(int argc, char **argv) {
 		else
 			next = now;
 		topology = get_olsr_data(rq_topo, port);
-		if (olsr_version == 1)
-			topology = strip_response(topology, "\"topology\"");
 		routing_table = get_olsr_data(rq_route, port);
-		if (olsr_version == 1)
-			routing_table = strip_response(routing_table, "\"routes\"");
 		hello = get_olsr_data(rq_hello, pop_port);
 		if (olsr_version == 2)
 			remove_newline(hello);
@@ -172,7 +167,7 @@ int main(int argc, char **argv) {
 
 		timespec_get(&now, TIME_UTC);
 		sprintf(base_filename, "%s_%06d_%lld_%09lld", argv_id, i, (long long)now.tv_sec, (long long)now.tv_nsec);
-		if (topology && (!last_topology || strcmp(last_topology, topology) != 0)) {
+		if (topology && (!last_topology || compare(last_topology, topology, olsr_version == 1 ? "\"topology\"" : 0) != 0)) {
 			sprintf(topo_filename, "%s%s", base_filename, EXT_TOPO);
 			topo_out = fopen(topo_filename, "w");
 			fprintf(topo_out, "%s", topology);
@@ -183,7 +178,7 @@ int main(int argc, char **argv) {
 		else {
 			free(topology);
 		}
-		if (routing_table && (!last_routing_table || strcmp(last_routing_table, routing_table) != 0)) {
+		if (routing_table && (!last_routing_table || compare(last_routing_table, routing_table, olsr_version == 1 ? "\"routes\"" : 0) != 0)) {
 			sprintf(route_filename, "%s%s", base_filename, EXT_ROUTE);
 			route_out = fopen(route_filename, "w");
 			fprintf(route_out, "%s", routing_table);
