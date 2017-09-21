@@ -28,14 +28,14 @@ class OlsrParser(BaseParser):
         graph = networkx.Graph()
         if 'topology' not in data:
             raise ParserError('Parse error, "topology" key not found')
-        elif 'mid' not in data:
-            raise ParserError('Parse error, "mid" key not found')
 
         # process alias list
         alias_dict = {}
-        for node in data['mid']:
-            local_addresses = [alias['ipAddress'] for alias in node['aliases']]
-            alias_dict[node['ipAddress']] = local_addresses
+        if 'mid' in data:
+            for node in data['mid']:
+                local_addresses = [alias['ipAddress']
+                                   for alias in node['aliases']]
+                alias_dict[node['ipAddress']] = local_addresses
 
         # loop over topology section and create networkx graph
         for link in data['topology']:
