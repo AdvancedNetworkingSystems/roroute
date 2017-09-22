@@ -1081,6 +1081,20 @@ if __name__ == '__main__':
         print('Start: %s' % (start_strategy_list[strategy_idx],))
         sys.stdout.flush()
 
+        # Now the topology is stable. Let's kill prince for avoidind tc and
+        # hello timets fluctuations
+        print("Killing prince (TC and HELLO timers are fixed)")
+        sys.stdout.flush()
+        stop_prince_cmd = 'ansible-playbook stop-prince.yaml ' +\
+                          '--extra-vars ' +\
+                          '"testbed=' + testbed + '"'
+
+        if verbose:
+            print(stop_prince_cmd)
+        sys.stdout.flush()
+
+        [rcode, cout, cerr] = run_command(stop_prince_cmd)
+
         #######################################################################
         # Schedule topology_dumper
         stop_start_strategy_str = stop_strategy_list[strategy_idx]
