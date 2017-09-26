@@ -21,9 +21,11 @@ else
 	sudo rm -f /usr/bin/topology_dumper
 	sudo rm -f /usr/bin/start_topology_dumper
 	sudo rm -f /usr/bin/runat
+	sudo rm -f /usr/bin/rt_dumper.py
 	sudo ln -s $PWD/topology_dumper /usr/bin/topology_dumper
 	sudo ln -s $PWD/start_topology_dumper /usr/bin/start_topology_dumper
 	sudo ln -s $PWD/runat /usr/bin/runat
+	sudo ln -s $PWD/rt_dumper.py /usr/bin/rt_dumper.py
 	cd ../
 	${SUDO} pip install scipy
 fi

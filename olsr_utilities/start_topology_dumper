@@ -27,3 +27,4 @@ if [ -z "$prince_pid" ]; then
 fi
 
 echo topology_dumper $1 $2 $3 $4_$host_name $olsr_pid $prince_pid $version | at now
+echo rt_dumper.py --starttime $1 --stoptime $2 --interval $3 --outid $4_$host_name --version $version | at now
