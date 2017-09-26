@@ -26,6 +26,7 @@ import customtopo as ct
 import sys
 import scipy.sparse as sp
 import random
+from math import sqrt
 
 
 def __get_matrix(m, mapping):
@@ -102,6 +103,21 @@ def __get_links(m, sorted_map, nodes, disabled=True):
     return dl
 
 
+def __get_graph(adjacency_matrix, mapping, nodes):
+    """
+    Given an adjancency matrix returns the corresponding networkx graph
+    :param adjacency_matrix: the adjacency matrix
+    :param mapping: mapping between the index of nodes in the adjaceny matrix
+    and the index of nodes inside the list of node names
+    :param nodes: list of node names
+    :return: networkx graph of the given adjacency matrix
+    """
+    G = nx.from_scipy_sparse_matrix(adjacency_matrix)
+    new_names = dict((i, nodes[mapping[i]]) for i in range(len(nodes)))
+    nx.relabel_nodes(G, new_names, copy=False)
+    return G
+
+
 def __add_link_costs(enabled_links, seed, olsrv1=False):
     """
     Given the dictionary of enabled links, return a dictionary of tuples
@@ -171,6 +187,18 @@ def __stringify_link_costs(link_costs, olsrv1=False):
     return ';'.join(costs)
 
 
+def __stringify_intervals(intervals):
+    """
+    Transforms the dictionary of hello and tc intervals computed using the
+    __compute_intervals function into a configuration string for the
+    experiments
+    :param intervals: dictionary of hello and tc intervals
+    :return: configuration string
+    """
+    nodes = ["%s:%.2f,%.2f" % (n, h, t) for n, (h, t) in intervals.iteritems()]
+    return ";".join(nodes)
+
+
 def print_matrix(m, mapping=None):
     """
     Prints a matrix to stdout
@@ -191,6 +219,29 @@ def print_matrix(m, mapping=None):
         for c in range(n):
             sys.stdout.write("%3d, " % m[mapping[r], mapping[c]])
         sys.stdout.write("\n")
+
+
+def __compute_intervals(graph):
+    """
+    Given a networkx graph, returns the poprouting hello and tc intervals to
+    be set for each node
+    :param graph: graph
+    :return: a dictionary in the form "node: (hello, tc)"
+    """
+    bc = nx.betweenness_centrality(graph, weight="weight", endpoints=True)
+    # compute hello interval constants
+    o_h = sum([v for k, v in graph.degree().iteritems()]) / 2.0
+    hello_const = 1/o_h * sum([sqrt(bc[node] * graph.degree()[node])
+                               for node in graph.nodes()])
+    # compute tc interval constants
+    r = len(graph.edges())
+    o_lsa = len(graph.nodes()) * r / 5.0
+    tc_const = 1/o_lsa * sum([sqrt(bc[node] * r) for node in graph.nodes()])
+    # return a dictionary node -> (hello, tc)
+    ints = dict((node, (sqrt(graph.degree()[node] / bc[node]) * hello_const,
+                        sqrt(r / bc[node]) * tc_const))
+                for node in graph.nodes())
+    return ints
 
 
 def get_firewall_rules(graph, generator_string, seed=0,
@@ -307,5 +358,8 @@ def get_firewall_rules(graph, generator_string, seed=0,
                                               False), seed, olsrv1=olsrv1)
     costs = __stringify_link_costs(link_costs, olsrv1=olsrv1)
 
+    graph = __get_graph(best_matrix, best_mapping, testbed_g.nodes())
+    intervals = __stringify_intervals(__compute_intervals(graph))
+
     # we return the configuration string and the measure of the match
-    return rules, costs, best_score
+    return rules, costs, intervals, best_score

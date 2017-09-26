@@ -9,7 +9,7 @@ testbed=$1
 # pairs.
 metrics=$2
 
-# timers string format: "hostname:hello,tc;..."
+# timers string format: "IPnode1:hello,tc;..."
 timers=$3
 
 opkg_path=`which opkg`
@@ -43,7 +43,8 @@ if [ $# -eq 3 ]; then
 	# we also have to set fixed timers
 	for n in $(echo $timers | sed -e "s/;/ /g")
 	do
-		node_name=$(echo ${n} | cut -d':' -f 1)
+		node_ip=$(echo ${n} | cut -d ':' -f 1)
+		node_name=$(cat /etc/hosts | grep "${node_ip} " | cut -d ' ' -f 2 | sed -e 's/^pop-\(.*$\)/\1/')
 		if [ "$host_name" = "$node_name" ]; then
 			hello_interval=$(echo ${n} | cut -d':' -f 2 | cut -d',' -f 1)
 			tc_interval=$(echo ${n} | cut -d':' -f 2 | cut -d',' -f 2)
