@@ -9,6 +9,9 @@ testbed=$1
 # pairs.
 metrics=$2
 
+# timers string format: "hostname:hello,tc;..."
+timers=$3
+
 opkg_path=`which opkg`
 if [ -z "$opkg_path" ]; then
 	host_name=`hostname | cut -d'.' -f 1`
@@ -35,6 +38,20 @@ do
 	fi
 done
 
+timers_out=""
+if [ $# -eq 3 ]; then
+	# we also have to set fixed timers
+	for n in $(echo $timers | sed -e "s/;/ /g")
+	do
+		node_name=$(echo ${n} | cut -d':' -f 1)
+		if [ "$host_name" = "$node_name" ]; then
+			hello_interval=$(echo ${n} | cut -d':' -f 2 | cut -d',' -f 1)
+			tc_interval=$(echo ${n} | cut -d':' -f 2 | cut -d',' -f 2)
+			timers_out="HelloInterval ${hello_interval}\nTcInterval ${tc_interval}\n"
+		fi
+	done
+fi
+
 metrics_out=$(cat <<EOF
 DebugLevel 0
 
@@ -51,6 +68,7 @@ LoadPlugin "olsrd_poprouting.so.0.1" {
 InterfaceDefaults
 {
 ${metrics_out}
+${timers_out}
 }
 EOF
 )
