@@ -4,8 +4,11 @@
   - name: set nodes string
     set_fact:
       metrics: ""
+  - name: set nodes intervals
+    set_fact:
+      intervals: ""
   - name: deploy constant metrics
-    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }}"
+    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }} {{intervals}}"
     args:
       chdir: "{{ ansible_env.HOME }}"
 

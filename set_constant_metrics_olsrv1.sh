@@ -22,21 +22,23 @@ else
 fi
 
 metrics_out=""
-for n in $(echo $metrics | sed -e "s/;/ /g")
-do
-	node_ip=$(echo ${n} | cut -d ':' -f 1)
-	node_name=$(cat /etc/hosts | grep "${node_ip} " | cut -d ' ' -f 2 | sed -e 's/^pop-\(.*$\)/\1/')
-	metric_per_dst=$(echo ${n} | cut -d ':' -f 2)
+if [ "${metrics}" != "undefined" ]; then
+	for n in $(echo $metrics | sed -e "s/;/ /g")
+	do
+		node_ip=$(echo ${n} | cut -d ':' -f 1)
+		node_name=$(cat /etc/hosts | grep "${node_ip} " | cut -d ' ' -f 2 | sed -e 's/^pop-\(.*$\)/\1/')
+		metric_per_dst=$(echo ${n} | cut -d ':' -f 2)
 
-	if [ "$host_name" = "$node_name" ]; then
-		for dst_cost in $(echo ${metric_per_dst} | sed -e "s/,/ /g")
-		do
-			dst=$(echo ${dst_cost} | cut -d '-' -f 1)
-			cost=$(echo ${dst_cost} | cut -d '-' -f 2)
-			metrics_out="${metrics_out}    LinkQualityMult    ${dst} ${cost}\n"
-		done
-	fi
-done
+		if [ "$host_name" = "$node_name" ]; then
+			for dst_cost in $(echo ${metric_per_dst} | sed -e "s/,/ /g")
+			do
+				dst=$(echo ${dst_cost} | cut -d '-' -f 1)
+				cost=$(echo ${dst_cost} | cut -d '-' -f 2)
+				metrics_out="${metrics_out}    LinkQualityMult    ${dst} ${cost}\n"
+			done
+		fi
+	done
+fi
 
 timers_out=""
 if [ $# -eq 3 ]; then
@@ -47,10 +49,16 @@ if [ $# -eq 3 ]; then
 		node_name=$(cat /etc/hosts | grep "${node_ip} " | cut -d ' ' -f 2 | sed -e 's/^pop-\(.*$\)/\1/')
 		if [ "$host_name" = "$node_name" ]; then
 			hello_interval=$(echo ${n} | cut -d':' -f 2 | cut -d',' -f 1)
+			hello_val=$(echo "scale=2; ${hello_interval}*3" | bc)
 			tc_interval=$(echo ${n} | cut -d':' -f 2 | cut -d',' -f 2)
+			tc_val=$(echo "scale=2; ${tc_interval}*3" | bc)
+			#timers_out="HelloInterval ${hello_interval}\nHelloValidityTime ${hello_val}\nTcInterval ${tc_interval}\nTcValidityTime ${tc_val}"
 			timers_out="HelloInterval ${hello_interval}\nTcInterval ${tc_interval}\n"
 		fi
 	done
+else
+	#timers_out="HelloInterval 2.00\nHelloValidityTime 6.00\nTcInterval 5.00\nTcValidityTime 15.00"
+	timers_out="HelloInterval 2.00\nTcInterval 5.00"
 fi
 
 metrics_out=$(cat <<EOF
