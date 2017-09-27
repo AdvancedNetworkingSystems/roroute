@@ -8,16 +8,18 @@ if [ -z "$opkg_path" ]; then
 	if [ ! -d poprouting ]; then
 		git clone https://github.com/AdvancedNetworkingSystems/poprouting.git
 		cd poprouting
-		git checkout refactor_ospf
+		git checkout f509b958ecde6d9c611bc39ffa7a25e2d95b7b7b
 		cd ..
 	else
 		cd poprouting
 		make clean
-		git pull
+		git checkout -- .
 		cd ..
 	fi
 
 	cd poprouting
+
+	patch -p1 < ../prince.patch
 
 	# Fix LDFLAGS in Makefile (this was tested for commit 1b1fa863c4bb88d3)
 	# cat Makefile | sed \
@@ -26,8 +28,8 @@ if [ -z "$opkg_path" ]; then
 	# 	mv Makefile.tmp Makefile
 
 	# # We use IPv4 not IPv6
-	cat prince/src/oonf.c | sed -e 's/\(^.*\)ipv6_0\(.*$\)/\1ipv4_0\2/' > \
-		/tmp/oonf.c && mv /tmp/oonf.c prince/src/oonf.c
+	cat prince/lib/OONF/oonf.c | sed -e 's/\(^.*\)ipv6_0\(.*$\)/\1ipv4_0\2/' > \
+		/tmp/oonf.c && mv /tmp/oonf.c prince/lib/OONF/oonf.c
 
 	make
 
