@@ -3,7 +3,7 @@
 "protocol" : "test",
 "host"  : "127.0.0.1",
 "port" : 9090,
-"refresh" : 1,
+"refresh" : 10,
 "timer_port": 1234,
 "log_file" : ""
 },
