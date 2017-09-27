@@ -8,7 +8,8 @@ if [ -z "$opkg_path" ]; then
 	if [ ! -d poprouting ]; then
 		git clone https://github.com/AdvancedNetworkingSystems/poprouting.git
 		cd poprouting
-		git checkout f509b958ecde6d9c611bc39ffa7a25e2d95b7b7b
+		# git checkout f509b958ecde6d9c611bc39ffa7a25e2d95b7b7b
+		git checkout b833f5417012702751ca03065ec937b43a5212c6
 		cd ..
 	else
 		cd poprouting
