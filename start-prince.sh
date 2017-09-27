@@ -1,10 +1,18 @@
 #!/usr/bin/env sh
 
-if [ $# -ge 1 ]; then
+prince_conf="prince_conf_c_h.json"
+prince_log="/tmp/prince.log"
+
+if [ $# -eq 1 ]; then
 	prince_conf=$1
-else
-	prince_conf="prince_conf_c_h.json"
+elif [ $# -eq 2 ]; then
+	prince_conf=$1
+	prince_log=$2
 fi
+
+sudo rm /tmp/prince.conf
+cat $(pwd)/${prince_conf} | sed 's@^.*log_file.*$@"log_file":"'"${prince_log}"'"@' > /tmp/prince.conf
+cp /tmp/prince.conf $(pwd)/${prince_conf}
 
 # determine whether we are on a NUC or on a TPLINK
 opkg_path=`which opkg`

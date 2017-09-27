@@ -4,7 +4,10 @@
   - name: set prince configuration
     set_fact:
       prince_conf: "prince_conf_c_h.conf"
+  - name: set prince log file
+    set_fact:
+      prince_log: "/tmp/prince.log"
   - name: start prince
-    command: "/usr/bin/env sh start-prince.sh {{ prince_conf }}"
+    command: "/usr/bin/env sh start-prince.sh {{ prince_conf }} {{ prince_log }}"
     args:
       chdir: "{{ ansible_env.HOME }}"
