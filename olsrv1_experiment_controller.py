@@ -530,7 +530,8 @@ def stop_mostcentral_1s_repeat(start_graph, current_stable_graph,
     # Remove selfloop
     g.remove_edges_from(g.selfloop_edges())
     # Nodes ordered using betweenness centrality
-    betcent_nodes = nx.betweenness_centrality(g, weight='weight')
+    betcent_nodes = nx.betweenness_centrality(g, weight='weight',
+                                              endpoints=True)
     betcent_sorted_nodes = sorted(betcent_nodes.items(),
                                   key=lambda x: x[1], reverse=True)
     # Find the articulation points of the graph. Removing articulation point
@@ -695,7 +696,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     # nodes_rules = graph_type(current_graph)
     # nodes_rules = 'nuc0-20:nuc0-43,nuc0-21;nuc0-43:nuc0-20,nuc0-21'
     # nodes_rules = '10.1.0.20:10.1.0.43;10.1.0.43:10.1.0.20'
-    nodes_rules, nodes_metrics, score =\
+    nodes_rules, nodes_metrics, intervals, score =\
         reducetopology.get_firewall_rules(current_graph, graph_params,
                                           seed=metricsseed,
                                           olsrv1=True)
@@ -717,7 +718,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     print("Firewall rules: %s" % (nodes_rules,))
     print("Constant metrics: %s" % (nodes_metrics,))
 
-    return nodes_rules, nodes_metrics
+    return nodes_rules, nodes_metrics, intervals
 
 
 verbose = False
@@ -784,6 +785,10 @@ if __name__ == '__main__':
                         help='How many times to repeat the selected kill '
                              'strategy. The kill strategy function can '
                              'ignore this parameter')
+    parser.add_argument("--weights", dest="weights",
+                        default=False, action="store_true")
+    parser.add_argument("--fixedintervals", dest="fixedintervals",
+                        default=False, action="store_true")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         default=False, action="store_true")
     args = parser.parse_args()
@@ -798,6 +803,8 @@ if __name__ == '__main__':
     expname = args.expname
     metricsseed = args.metricsseed
     nrepeat = args.nrepeat
+    fixedintervals = args.fixedintervals
+    weights = args.weights
     verbose = args.verbose
 
     print('Experiment configuration for testbed %s:' % (testbed,))
@@ -816,7 +823,7 @@ if __name__ == '__main__':
     strategy_idx = 0
     prince_running = False
     start_dumper_guard_time_seconds = 60
-    stop_dumper_guard_time_seconds = 60
+    stop_dumper_guard_time_seconds = 90
     homedir = expanduser("~")
 
     possibles = globals().copy()
@@ -827,7 +834,7 @@ if __name__ == '__main__':
 
     #######################################################################
     # Deploy firewall rules
-    nodes_rules, nodes_metrics =\
+    nodes_rules, nodes_metrics, intervals =\
         preliminary_net_setup_for_firewall_rules_deployment(testbed,
                                                             legacyrate,
                                                             channel,
@@ -836,21 +843,6 @@ if __name__ == '__main__':
                                                             metricsseed,
                                                             homedir + '/' +
                                                             expname)
-
-    #######################################################################
-    # Deploy the new olsrd configuration files with the constant link metrics
-    print("Setting constant metrics")
-    sys.stdout.flush()
-    metrics_cmd = 'ansible-playbook set-constant-metrics-olsrv1.yaml ' +\
-                  '--extra-vars ' +\
-                  '"testbed=' + testbed + ' ' +\
-                  'metrics=' + nodes_metrics + '"'
-
-    if verbose:
-        print(metrics_cmd)
-    sys.stdout.flush()
-
-    [rcode, cout, cerr] = run_command(metrics_cmd)
 
     # Loop index
     while True:
@@ -973,6 +965,30 @@ if __name__ == '__main__':
         [rcode, cout, cerr] = run_command(firewall_cmd)
 
         #######################################################################
+        # Deploy the new olsrd configuration files with the constant
+        # link metrics (and optionally tx and hello intervals
+        print("Setting constant metrics")
+        sys.stdout.flush()
+        metrics_cmd = 'ansible-playbook set-constant-metrics-olsrv1.yaml ' +\
+                      '--extra-vars ' +\
+                      '"testbed=' + testbed
+
+        if weights:
+            metrics_cmd += ' metrics=' + nodes_metrics + '"'
+        else:
+            metrics_cmd += ' metrics=undefined"'
+
+        if fixedintervals and prince_running:
+            metrics_cmd = metrics_cmd.rstrip('"')
+            metrics_cmd += ' intervals=' + intervals + '"'
+
+        if verbose:
+            print(metrics_cmd)
+        sys.stdout.flush()
+
+        [rcode, cout, cerr] = run_command(metrics_cmd)
+
+        #######################################################################
         # Start olsrd
         print("Starting olsrd")
         sys.stdout.flush()
@@ -990,14 +1006,16 @@ if __name__ == '__main__':
         # the nodes.
 
         #######################################################################
-        # Start prince if required.
+        # Start prince if required
 
-        if prince_configuration_file:
+        if prince_configuration_file and not fixedintervals:
             print("Starting prince (%s)" % (prince_configuration_file,))
             sys.stdout.flush()
             start_prince_cmd = 'ansible-playbook start-prince.yaml ' +\
                                '--extra-vars ' +\
                                '"testbed=' + testbed + ' ' +\
+                               'prince_log=' + iter_results_dir_name +\
+                               '/prince.log ' +\
                                'prince_conf=' + prince_configuration_file + '"'
 
             if verbose:
@@ -1083,17 +1101,18 @@ if __name__ == '__main__':
 
         # Now the topology is stable. Let's kill prince for avoidind tc and
         # hello timets fluctuations
-        print("Killing prince (TC and HELLO timers are fixed)")
-        sys.stdout.flush()
-        stop_prince_cmd = 'ansible-playbook stop-prince.yaml ' +\
-                          '--extra-vars ' +\
-                          '"testbed=' + testbed + '"'
+        if prince_configuration_file and not fixedintervals:
+            print("Killing prince (TC and HELLO timers are fixed)")
+            sys.stdout.flush()
+            stop_prince_cmd = 'ansible-playbook stop-prince.yaml ' +\
+                              '--extra-vars ' +\
+                              '"testbed=' + testbed + '"'
 
-        if verbose:
-            print(stop_prince_cmd)
-        sys.stdout.flush()
+            if verbose:
+                print(stop_prince_cmd)
+            sys.stdout.flush()
 
-        [rcode, cout, cerr] = run_command(stop_prince_cmd)
+            [rcode, cout, cerr] = run_command(stop_prince_cmd)
 
         #######################################################################
         # Schedule topology_dumper
@@ -1148,6 +1167,9 @@ if __name__ == '__main__':
         #######################################################################
         # Schedule nodes start
         if start_strategy_list[strategy_idx]:
+            if fixedintervals:
+                raise Exception('Node restart not supported with '
+                                'fixed intervals')
             print('Scheduling nodes start')
             sys.stdout.flush()
 
