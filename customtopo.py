@@ -81,6 +81,6 @@ def shortcut_graph(n, l_odd, l_even):
     for i in range(n - l_even, n - 1):
         g.add_edge(i, i+1)
     # connect the two chains together
-    g.add_edge((n-l_odd-2)/2-1, n-l_even)
-    g.add_edge((n-l_odd-2)/2+l_odd, n-1)
+    g.add_edge((n-l_odd-l_even)/2-1, n-l_even)
+    g.add_edge((n-l_odd-l_even)/2+l_odd, n-1)
     return g
