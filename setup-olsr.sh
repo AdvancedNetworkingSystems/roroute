@@ -48,7 +48,8 @@ if [ -z "$opkg_path" ]; then
 		sudo apt-get install -y libgps-dev
 		git clone https://github.com/AdvancedNetworkingSystems/olsrd.git
 		cd olsrd
-		git checkout poprow
+		# git checkout poprow
+		git checkout poprow_validity
 		make -j 4 build_all
 		sudo cp lib/*/*.so.* /usr/local/lib
 		cd ..
