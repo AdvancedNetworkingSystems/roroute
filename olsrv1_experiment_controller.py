@@ -1031,27 +1031,6 @@ if __name__ == '__main__':
         # the nodes.
 
         #######################################################################
-        # Start prince if required
-
-        if prince_configuration_file and not fixedintervals:
-            print("Starting prince (%s)" % (prince_configuration_file,))
-            sys.stdout.flush()
-            start_prince_cmd = 'ansible-playbook start-prince.yaml ' +\
-                               '--extra-vars ' +\
-                               '"testbed=' + testbed + ' ' +\
-                               'prince_log=' + iter_results_dir_name +\
-                               '/prince.log ' +\
-                               'prince_conf=' + prince_configuration_file + '"'
-
-            if verbose:
-                print(start_prince_cmd)
-            sys.stdout.flush()
-
-            [rcode, cout, cerr] = run_command(start_prince_cmd)
-        else:
-            print("Olsr will run without prince enabled")
-
-        #######################################################################
         # Wait for olsr convergence
         print("Sleep for 30 seconds...")
         sys.stdout.flush()
@@ -1123,6 +1102,28 @@ if __name__ == '__main__':
         print('Stop: %s' % (stop_strategy_list[strategy_idx],))
         print('Start: %s' % (start_strategy_list[strategy_idx],))
         sys.stdout.flush()
+
+        #######################################################################
+        # Start prince if required
+
+        if prince_configuration_file and not fixedintervals:
+            print("Starting prince (%s)" % (prince_configuration_file,))
+            sys.stdout.flush()
+            start_prince_cmd = 'ansible-playbook start-prince.yaml ' +\
+                               '--extra-vars ' +\
+                               '"testbed=' + testbed + ' ' +\
+                               'prince_log=' + iter_results_dir_name +\
+                               '/prince.log ' +\
+                               'prince_conf=' + prince_configuration_file + '"'
+
+            if verbose:
+                print(start_prince_cmd)
+            sys.stdout.flush()
+
+            [rcode, cout, cerr] = run_command(start_prince_cmd)
+        else:
+            print("Olsr will run without prince enabled")
+
 
         # Now the topology is stable. Let's kill prince for avoidind tc and
         # hello timets fluctuations

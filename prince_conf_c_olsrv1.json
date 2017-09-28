@@ -4,7 +4,7 @@
 "json_type": "jsoninfo",
 "host"  : "127.0.0.1",
 "port" : 9090,
-"refresh" : 10,
+"refresh" : 30,
 "timer_port": 1234,
 "log_file" : ""
 },
