@@ -547,6 +547,30 @@ def stop_mostcentral_1s_repeat(start_graph, current_stable_graph,
     return (ret_stop_strategy_list, ret_start_strategy_list)
 
 
+def stop_center_evenchain_1s_repeat(start_graph, current_stable_graph,
+                                    stop_strategy_list,
+                                    start_strategy_list,
+                                    strategy_idx,
+                                    nrepeat):
+    if stop_strategy_list:
+        return (stop_strategy_list, start_strategy_list)
+
+    ret_stop_strategy_list = []
+    ret_start_strategy_list = []
+    g = start_graph.copy()
+    ds = sorted(g.degree().items(), key=lambda x: x[1])
+    n1 = ds[-1][0]
+    n2 = ds[-2][0]
+    p_n1_n2 = nx.shortest_path(g, n1, n2)
+    n_to_kill = p_n1_n2[(len(p_n1_n2) - 1) / 2]
+
+    for idx in range(0, nrepeat):
+        ret_stop_strategy_list.append(n_to_kill + '@1.000')
+        ret_start_strategy_list.append('')
+
+    return (ret_stop_strategy_list, ret_start_strategy_list)
+
+
 # This function produces a strategy where the two most central nodes
 # (betweenness centrality) are stopped at 1s and restarted at 61s
 # We assume the graph as at least two nodes
@@ -724,6 +748,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
 verbose = False
 strategy_functions = [
                     'stop_mostcentral_1s_repeat',
+                    'stop_center_evenchain_1s_repeat',
                     'stop_one_random_node_1s',
                     'one_node_stop_1s_5mostcentral',
                     'stop_one_node_1s_loop',
@@ -1104,6 +1129,7 @@ if __name__ == '__main__':
         if prince_configuration_file and not fixedintervals:
             print("Killing prince (TC and HELLO timers are fixed)")
             sys.stdout.flush()
+            time.sleep(12)
             stop_prince_cmd = 'ansible-playbook stop-prince.yaml ' +\
                               '--extra-vars ' +\
                               '"testbed=' + testbed + '"'
