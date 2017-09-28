@@ -1124,7 +1124,6 @@ if __name__ == '__main__':
         else:
             print("Olsr will run without prince enabled")
 
-
         # Now the topology is stable. Let's kill prince for avoidind tc and
         # hello timets fluctuations
         if prince_configuration_file and not fixedintervals:
