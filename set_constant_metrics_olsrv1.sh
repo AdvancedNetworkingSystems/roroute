@@ -62,6 +62,7 @@ if [ $# -eq 3 ]; then
 else
 	#timers_out="HelloInterval 2.00\nHelloValidityTime 6.00\nTcInterval 5.00\nTcValidityTime 15.00"
 	#timers_out="HelloInterval 2.00\nHelloValidityTime 20.00\nTcInterval 5.00\nTcValidityTime 300.00"
+	#timers_out="HelloInterval 2.00\nHelloValidityTime 20.00\nTcInterval 5.00\n"
 	timers_out="HelloInterval 2.00\nTcInterval 5.00"
 fi
 
