@@ -49,7 +49,8 @@ if [ -z "$opkg_path" ]; then
 		git clone https://github.com/AdvancedNetworkingSystems/olsrd.git
 		cd olsrd
 		# git checkout poprow
-		git checkout poprow_validity
+		# git checkout poprow_validity
+		git checkout d7bcd7d795e7073b2250ecbc30ea780fa8104fed
 		make -j 4 build_all
 		sudo cp lib/*/*.so.* /usr/local/lib
 		cd ..
