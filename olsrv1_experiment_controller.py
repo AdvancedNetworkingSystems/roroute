@@ -848,7 +848,7 @@ if __name__ == '__main__':
     strategy_idx = 0
     prince_running = False
     start_dumper_guard_time_seconds = 60
-    stop_dumper_guard_time_seconds = 90
+    stop_dumper_guard_time_seconds = 400
     homedir = expanduser("~")
 
     possibles = globals().copy()
