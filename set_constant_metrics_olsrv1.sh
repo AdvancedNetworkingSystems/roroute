@@ -84,6 +84,7 @@ InterfaceDefaults
 ${metrics_out}
 ${timers_out}
 }
+LinkQualityFishEye    0
 EOF
 )
 
