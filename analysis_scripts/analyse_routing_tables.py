@@ -154,7 +154,10 @@ class OlsrPrinceExp:
             print('Loading routing tables')
             rt_list = self.load_routing_tables(node_name, results_dir)
             intervals_list = self.load_intervals(node_name, results_dir)
-            topo_list = self.load_topologies(node_name, results_dir)
+            if node_name == self.master_node_name:
+                topo_list = self.load_topologies(node_name, results_dir)
+            else:
+                topo_list = None
             self.nodes_exp_data_dict[node_name] = (rt_list,
                                                    intervals_list,
                                                    topo_list)
@@ -353,7 +356,7 @@ class OlsrPrinceExp:
     def compute_desynchronization_rt_at_idx0(self):
         times_at_idx0_list = []
         for node_name in self.nodes_names_list:
-            rt = self.nodes_exp_data_dict[node_name][2]
+            rt = self.nodes_exp_data_dict[node_name][0]
             idx, ts = rt[0].get_ts_s_ms()
             times_at_idx0_list.append(ts)
 
