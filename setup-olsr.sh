@@ -51,7 +51,9 @@ if [ -z "$opkg_path" ]; then
 		# tc validiy x10, hello validity x10
 		# git checkout poprow
 		# tc validity x60, hello validity x10
-		git checkout poprow_validity
+		# git checkout poprow_validity
+		# tc validity x3, hello validity 3x
+		git checkout poprow_validity_x3
 		# tc validity default, hello validity x10
 		# git checkout 9e38e425173050f62b4f38c2029a1c8c80df3471
 		# tc validity x30, hello validity x10
