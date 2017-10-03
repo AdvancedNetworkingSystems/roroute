@@ -128,8 +128,8 @@ def __add_link_costs(enabled_links, seed, olsrv1=False):
     :return: the dictionary with randomized link costs
     """
     if olsrv1:
-        link_step = 0.05
-        n_costs = 10
+        link_step = 0.005
+        n_costs = 100
         min_cost = 0.5
     else:
         link_step = 16
