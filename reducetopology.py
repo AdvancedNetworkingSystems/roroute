@@ -178,7 +178,7 @@ def __stringify_link_costs(link_costs, olsrv1=False):
     costs = []
     for node, neighbors in link_costs.iteritems():
         if olsrv1:
-            node_costs = ','.join(["%s-%.2f" % (neigh, cost)
+            node_costs = ','.join(["%s-%.3f" % (neigh, cost)
                                    for (neigh, cost) in neighbors])
         else:
             node_costs = ','.join(["%s-%d" % (neigh, cost)
@@ -195,7 +195,7 @@ def __stringify_intervals(intervals):
     :param intervals: dictionary of hello and tc intervals
     :return: configuration string
     """
-    nodes = ["%s:%.2f,%.2f" % (n, h, t) for n, (h, t) in intervals.iteritems()]
+    nodes = ["%s:%.3f,%.3f" % (n, h, t) for n, (h, t) in intervals.iteritems()]
     return ";".join(nodes)
 
 
