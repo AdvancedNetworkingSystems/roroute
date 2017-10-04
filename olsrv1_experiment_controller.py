@@ -816,6 +816,10 @@ if __name__ == '__main__':
                         default=False, action="store_true")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         default=False, action="store_true")
+    parser.add_argument('--hellomult', dest='hello_mult',
+                        type=float, help='Hello validity multiplier')
+    parser.add_argument('--tcmult', dest='tc_mult',
+                        type=float, help='Tc validity multiplier')
     args = parser.parse_args()
 
     channel = args.chan
@@ -831,6 +835,8 @@ if __name__ == '__main__':
     fixedintervals = args.fixedintervals
     weights = args.weights
     verbose = args.verbose
+    hello_mult = args.hello_mult
+    tc_mult = args.tc_mult
 
     print('Experiment configuration for testbed %s:' % (testbed,))
     print('Experiment name %s:' % (expname,))
@@ -1007,6 +1013,10 @@ if __name__ == '__main__':
             metrics_cmd = metrics_cmd.rstrip('"')
             metrics_cmd += ' intervals=' + intervals + '"'
 
+        metrics_cmd = metrics_cmd.rstrip('"')
+        metrics_cmd += ' hellomult=' + str(hello_mult)
+        metrics_cmd += ' tcmult=' + str(tc_mult) + '"'
+
         if verbose:
             print(metrics_cmd)
         sys.stdout.flush()
@@ -1112,6 +1122,8 @@ if __name__ == '__main__':
             start_prince_cmd = 'ansible-playbook start-prince.yaml ' +\
                                '--extra-vars ' +\
                                '"testbed=' + testbed + ' ' +\
+                               'hellomult=' + str(hello_mult) + ' ' +\
+                               'tcmult=' + str(tc_mult) + ' ' +\
                                'prince_log=' + iter_results_dir_name +\
                                '/prince.log ' +\
                                'prince_conf=' + prince_configuration_file + '"'

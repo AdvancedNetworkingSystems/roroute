@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-if [ $# -ne 14 ]; then
-	echo "Usage: $0 <testbed> <channel> <legacy rate> <txpower> <strategy name> <strategy nrepeat> <graph params> <metrics seed> <exp name> <results_basedir> <weights (True|False)> <fixed intervals (True|False)> <verbose (True|False)> <copy results on local node (True|False)>"
+if [ $# -ne 16 ]; then
+	echo "Usage: $0 <testbed> <channel> <legacy rate> <txpower> <strategy name> <strategy nrepeat> <graph params> <metrics seed> <exp name> <results_basedir> <weights (True|False)> <fixed intervals (True|False)> <verbose (True|False)> <copy results on local node (True|False)> <hello validity multiplier> <tc validity multiplier>"
 	exit 1
 fi
 
@@ -31,15 +31,17 @@ else
 	verbose=""
 fi
 copyresults=${14}
+hello_mult=${15}
+tc_mult=${16}
 
 . ./setenv.sh $testbed
 
 ANSIBLE_FOLDER=${HOME_FOLDER}/ansible/
 EXPERIMENT_CONTROLLER=olsrv1_experiment_controller.py
 
-echo "cd ${ANSIBLE_FOLDER} &&./${EXPERIMENT_CONTROLLER} --testbed ${testbed} --chan ${channel} --legacyrate ${legacyrate} --txpower ${txpower} --killstrategy ${killstrategy} --nrepeat ${nrepeat} --graphparams ${graphparams} --metricsseed ${mseed} --expname ${expname} --resultsdir ${resultsdir} ${weights} ${fixedintervals} ${verbose}"
+echo "cd ${ANSIBLE_FOLDER} &&./${EXPERIMENT_CONTROLLER} --testbed ${testbed} --chan ${channel} --legacyrate ${legacyrate} --txpower ${txpower} --killstrategy ${killstrategy} --nrepeat ${nrepeat} --graphparams ${graphparams} --metricsseed ${mseed} --expname ${expname} --resultsdir ${resultsdir} ${weights} ${fixedintervals} ${verbose} --hellomult ${hello_mult} --tcmult ${tc_mult}"
 ssh -A -F ${CONFIG_FILE} ${MASTER_NODE} \
-	"cd ${ANSIBLE_FOLDER} &&./${EXPERIMENT_CONTROLLER} --testbed ${testbed} --chan ${channel} --legacyrate ${legacyrate} --txpower ${txpower} --killstrategy ${killstrategy} --nrepeat ${nrepeat} --graphparams ${graphparams} --metricsseed ${mseed} --expname ${expname} --resultsdir ${resultsdir} ${weights} ${fixedintervals} ${verbose}"
+	"cd ${ANSIBLE_FOLDER} &&./${EXPERIMENT_CONTROLLER} --testbed ${testbed} --chan ${channel} --legacyrate ${legacyrate} --txpower ${txpower} --killstrategy ${killstrategy} --nrepeat ${nrepeat} --graphparams ${graphparams} --metricsseed ${mseed} --expname ${expname} --resultsdir ${resultsdir} ${weights} ${fixedintervals} ${verbose} --hellomult ${hello_mult} --tcmult ${tc_mult}"
 
 # Probably it is better if we do some preliminary analysis on the master node
 # for reducing the size of the results before copying everything on the local

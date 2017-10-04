@@ -3,12 +3,18 @@
 prince_conf="prince_conf_c_h.json"
 prince_log="/tmp/prince.log"
 
-if [ $# -eq 1 ]; then
-	prince_conf=$1
-elif [ $# -eq 2 ]; then
-	prince_conf=$1
-	prince_log=$2
+hello_mult=$1
+tc_mult=$2
+if [ $# -eq 3 ]; then
+	prince_conf=$3
+elif [ $# -eq 4 ]; then
+	prince_conf=$3
+	prince_log=$4
 fi
+
+# set validity multipliers before starting prince
+echo "/HelloTimerMult=${hello_mult}" | nc localhost 1234
+echo "/TcTimerMult=${tc_mult}" | nc localhost 1234
 
 sudo rm /tmp/prince.conf
 cat $(pwd)/${prince_conf} | sed 's@^.*log_file.*$@"log_file":"'"${prince_log}"'"@' > /tmp/prince.conf

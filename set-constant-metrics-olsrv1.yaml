@@ -7,8 +7,14 @@
   - name: set nodes intervals
     set_fact:
       intervals: ""
+  - name: set hello multiplier
+    set_fact:
+      hellomult: 10
+  - name: set tc multiplier
+    set_fact:
+      tcmult: 60
   - name: deploy constant metrics
-    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }} {{intervals}}"
+    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }} {{ hellomult }} {{ tcmult }} {{intervals}}"
     args:
       chdir: "{{ ansible_env.HOME }}"
 

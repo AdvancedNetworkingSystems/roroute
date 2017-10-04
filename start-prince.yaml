@@ -7,7 +7,13 @@
   - name: set prince log file
     set_fact:
       prince_log: "/tmp/prince.log"
+  - name: set hello multiplier
+    set_fact:
+      hellomult: 10
+  - name: set tc multiplier
+    set_fact:
+      tcmult: 60
   - name: start prince
-    command: "/usr/bin/env sh start-prince.sh {{ prince_conf }} {{ prince_log }}"
+    command: "/usr/bin/env sh start-prince.sh {{ hellomult }} {{ tcmult }} {{ prince_conf }} {{ prince_log }}"
     args:
       chdir: "{{ ansible_env.HOME }}"
