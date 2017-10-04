@@ -11,6 +11,7 @@ get.experiment = function(folder, r, n, prince) {
     names(routes) = c("total", "broken", "loop")
     routes = routes[min(which(routes$broken != 0)):nrow(routes),]
     routes$t = 1:nrow(routes)
+    routes$time = routes$t * 0.3
     routes$rep = n
     routes$prince = ifelse(prince, 1, 0)
     routes$experiment = folder
@@ -35,6 +36,11 @@ for (r in reps) {
         experiments <- rbind(experiments, get.experiment(folder, r, n, prince=T))
     }
 }
+cis = ddply(experiments, c("rep", "prince"), function(x) {
+    return(data.frame(ci=min(which(x$broken + x$loop == 0))))
+})
+cut.index = max(cis$ci) + 6
+experiments = subset(experiments, t < cut.index)
 
 integral = ddply(experiments, c("rep", "prince", "experiment"), function(x) {
     return(data.frame(i=sum(x$broken) + sum(x$loop)))
@@ -55,6 +61,7 @@ average = ddply(integral, c("prince", "experiment"), function(x) {
 
 lr = data.frame(experiment=folder, lr=1-average[average$prince==1,]$total/average[average$prince==0,]$total)
 
+write.table(experiments, file=paste(folder, "experiments.csv", sep="/"), row.names=F, col.names=F)
 write.table(integral, file=paste(folder, "integral.csv", sep="/"), row.names=F, col.names=F)
 write.table(average, file=paste(folder, "average.csv", sep="/"),   row.names=F, col.names=F)
 write.table(lr, file=paste(folder, "lr.csv", sep="/"),             row.names=F, col.names=F)
