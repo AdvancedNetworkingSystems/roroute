@@ -352,14 +352,14 @@ def wait_for_stable_topology():
 
 
 def stop_one_node_1s_loop(start_graph, current_stable_graph,
-                          strategy_list, strategy_idx, nrepeat):
+                          strategy_list, strategy_idx, nrepeat, conf_param):
     raise Exception('Strategy not implemented yet')
 
 
 # This strategy selects a random nodes and stops it after 1 second
 def stop_one_random_node_1s(start_graph, current_stable_graph,
                             stop_strategy_list, start_strategy_list,
-                            strategy_idx, nrepeat):
+                            strategy_idx, nrepeat, conf_param):
     '''
     TODO: This documentation is obsolete. Fix it.
     This is an example of how to implement a function that must define a
@@ -428,7 +428,7 @@ def stop_one_random_node_1s(start_graph, current_stable_graph,
 # it after 61s
 def stop_one_random_node_1s_start_61s(start_graph, current_stable_graph,
                                       stop_strategy_list, start_strategy_list,
-                                      strategy_idx, nrepeat):
+                                      strategy_idx, nrepeat, conf_param):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -454,7 +454,8 @@ def one_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
                                             stop_strategy_list,
                                             start_strategy_list,
                                             strategy_idx,
-                                            nrepeat):
+                                            nrepeat,
+                                            conf_param):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -481,7 +482,8 @@ def one_node_stop_1s_5mostcentral(start_graph, current_stable_graph,
                                   stop_strategy_list,
                                   start_strategy_list,
                                   strategy_idx,
-                                  nrepeat):
+                                  nrepeat,
+                                  conf_param):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -520,7 +522,8 @@ def stop_mostcentral_1s_repeat(start_graph, current_stable_graph,
                                stop_strategy_list,
                                start_strategy_list,
                                strategy_idx,
-                               nrepeat):
+                               nrepeat,
+                               conf_param):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -530,6 +533,7 @@ def stop_mostcentral_1s_repeat(start_graph, current_stable_graph,
     # Remove selfloop
     g.remove_edges_from(g.selfloop_edges())
     # Nodes ordered using betweenness centrality
+    no_leaves_nodes = nx.k_core(g, 2).nodes()
     betcent_nodes = nx.betweenness_centrality(g, weight='weight',
                                               endpoints=True)
     betcent_sorted_nodes = sorted(betcent_nodes.items(),
@@ -538,10 +542,12 @@ def stop_mostcentral_1s_repeat(start_graph, current_stable_graph,
     # increases the number of connected components
     excluded_nodes = [n for n in nx.articulation_points(g)]
     candidate_nodes = [n[0] for n in betcent_sorted_nodes
-                       if n[0] not in excluded_nodes]
+                       if n[0] not in excluded_nodes and
+                       n[0] in no_leaves_nodes]
 
     for idx in range(0, nrepeat):
-        ret_stop_strategy_list.append(candidate_nodes[0] + '@1.000')
+        ret_stop_strategy_list.append(candidate_nodes[int(conf_param)] +
+                                      '@1.000')
         ret_start_strategy_list.append('')
 
     return (ret_stop_strategy_list, ret_start_strategy_list)
@@ -551,7 +557,8 @@ def stop_center_evenchain_1s_repeat(start_graph, current_stable_graph,
                                     stop_strategy_list,
                                     start_strategy_list,
                                     strategy_idx,
-                                    nrepeat):
+                                    nrepeat,
+                                    conf_param):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -578,7 +585,8 @@ def two_node_stop_1s_start_61s_2mostcentral(start_graph, current_stable_graph,
                                             stop_strategy_list,
                                             start_strategy_list,
                                             strategy_idx,
-                                            nrepeat):
+                                            nrepeat,
+                                            conf_param):
     if stop_strategy_list:
         return (stop_strategy_list, start_strategy_list)
 
@@ -810,6 +818,8 @@ if __name__ == '__main__':
                         help='How many times to repeat the selected kill '
                              'strategy. The kill strategy function can '
                              'ignore this parameter')
+    parser.add_argument('--strategyparam', dest='strategyparam',
+                        type=str, help='Additional strategy parameter')
     parser.add_argument("--weights", dest="weights",
                         default=False, action="store_true")
     parser.add_argument("--fixedintervals", dest="fixedintervals",
@@ -832,6 +842,7 @@ if __name__ == '__main__':
     expname = args.expname
     metricsseed = args.metricsseed
     nrepeat = args.nrepeat
+    strategyparam = args.strategyparam
     fixedintervals = args.fixedintervals
     weights = args.weights
     verbose = args.verbose
@@ -845,6 +856,7 @@ if __name__ == '__main__':
           (channel, legacyrate, txpower, killstrategy))
     print('graph params: %s (metrics seed %d)' % (graphparams, metricsseed))
     print('Kill strategy repetitions: %d' % (nrepeat,))
+    print('Kill strategy parameter: %d' % (strategyparam,))
 
     #######################################################################
     # State variables initialization
@@ -1100,7 +1112,8 @@ if __name__ == '__main__':
                                                   stop_strategy_list,
                                                   start_strategy_list,
                                                   strategy_idx,
-                                                  nrepeat)
+                                                  nrepeat,
+                                                  strategyparam)
 
         if len(stop_strategy_list) != len(start_strategy_list):
             raise Exception('stop_strategy_list and start_strategy_list ' +
