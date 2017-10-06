@@ -84,3 +84,16 @@ def shortcut_graph(n, l_odd, l_even):
     g.add_edge((n-l_odd-l_even)/2-1, n-l_even)
     g.add_edge((n-l_odd-l_even)/2+l_odd, n-1)
     return g
+
+
+def graphml_graph(n, filename):
+    """
+    Generate a graph by reading the topology from a graphml file.
+    :param n: total number of nodes (ignored)
+    :param filename: graphml file
+    :return: a networkx graph representing the topology in the given file
+    """
+    g = nx.read_graphml(filename)
+    new_names = dict((i, int(i)) for i in g.nodes())
+    nx.relabel_nodes(g, new_names, copy=False)
+    return g
