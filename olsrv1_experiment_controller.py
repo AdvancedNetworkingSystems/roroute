@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
-
+import socket
 import sys
 import random
 import argparse
@@ -29,6 +29,8 @@ from collections import Counter
 import networkx as nx
 import reducetopology
 import olsrv1_util
+
+ansible_playbook = 'ansible-playbook --inventory=single-experiment '
 
 
 def create_directory(dirname, testbed):
@@ -671,7 +673,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     #######################################################################
     # Setup network interfaces
     print("Setting up network interfaces")
-    setup_interfaces_cmd = 'ansible-playbook setup-interfaces.yaml ' +\
+    setup_interfaces_cmd = ansible_playbook + 'setup-interfaces.yaml ' +\
                            '--extra-vars ' +\
                            '"testbed=' + testbed + ' ' +\
                            'rate=' + str(legacyrate) + ' ' +\
@@ -690,7 +692,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     # Start olsrd
     print("Starting olsrd")
     sys.stdout.flush()
-    start_olsr_cmd = 'ansible-playbook start-olsrv1.yaml ' +\
+    start_olsr_cmd = ansible_playbook + 'start-olsrv1.yaml ' +\
                      '--extra-vars ' +\
                      '"testbed=' + testbed + '"'
 
@@ -751,6 +753,42 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     print("Constant metrics: %s" % (nodes_metrics,))
 
     return nodes_rules, nodes_metrics, intervals
+
+
+def parse_config(filename, testbed):
+    in_testbed = False
+    nodes = []
+    with open(filename, "r") as f:
+        for r in f.readlines():
+            r = r.rstrip('\n')
+            if r == "":
+                continue
+            if r == "[" + testbed + "]":
+                in_testbed = True
+                continue
+            if r.startswith("[") and in_testbed:
+                break
+            if in_testbed:
+                nodes.append(r)
+    return nodes
+
+
+def setup_graphml_experiment(filename, testbed):
+
+    nodes = parse_config('hosts', testbed)
+    master = socket.gethostname().split('.')[0]
+
+    if filename != "":
+        g = nx.read_graphml(filename)
+        n = len(g.nodes())
+        nodes = nodes[0:n]
+        if master not in nodes:
+            nodes[-1] = master
+
+    with open("single-experiment", "w") as conf:
+        conf.write("[" + testbed + "]\n")
+        for n in nodes:
+            conf.write(n + "\n")
 
 
 verbose = False
@@ -849,6 +887,11 @@ if __name__ == '__main__':
     hello_mult = args.hello_mult
     tc_mult = args.tc_mult
 
+    filename = ""
+    (topo, params) = graphparams.split(':')
+    if topo == "graphml_graph":
+        param, filename = params.split('=')
+
     print('Experiment configuration for testbed %s:' % (testbed,))
     print('Experiment name %s:' % (expname,))
     print('Network configuration: '
@@ -856,7 +899,7 @@ if __name__ == '__main__':
           (channel, legacyrate, txpower, killstrategy))
     print('graph params: %s (metrics seed %d)' % (graphparams, metricsseed))
     print('Kill strategy repetitions: %d' % (nrepeat,))
-    print('Kill strategy parameter: %d' % (strategyparam,))
+    print('Kill strategy parameter: %s' % (strategyparam,))
 
     #######################################################################
     # State variables initialization
@@ -874,6 +917,8 @@ if __name__ == '__main__':
     strategy_func = possibles.get(killstrategy)
 
     create_directory(homedir + '/' + expname, testbed)
+
+    setup_graphml_experiment(filename, testbed)
 
     #######################################################################
     # Deploy firewall rules
@@ -946,6 +991,20 @@ if __name__ == '__main__':
         [rcode, cout, cerr] = run_command(flush_cmd)
 
         #######################################################################
+        # Turn wifi off
+        print("Turning off wifi")
+        sys.stdout.flush()
+        wifi_cmd = 'ansible-playbook turnoff_wifi.yaml ' + \
+                    '--extra-vars ' + \
+                    '"testbed=' + testbed + '"'
+
+        if verbose:
+            print(wifi_cmd)
+        sys.stdout.flush()
+
+        [rcode, cout, cerr] = run_command(wifi_cmd)
+
+        #######################################################################
         # Check if prince is required (prince_running == True)
         # TODO: Renato suggested to remove prince with heuristic because it
         # doesn't make any difference in small networks.
@@ -974,10 +1033,11 @@ if __name__ == '__main__':
 
         create_directory(iter_results_dir_name, testbed)
 
+
         #######################################################################
         # Setup network interfaces
         print("Setting up network interfaces")
-        setup_interfaces_cmd = 'ansible-playbook setup-interfaces.yaml ' +\
+        setup_interfaces_cmd = ansible_playbook + 'setup-interfaces.yaml ' +\
                                '--extra-vars ' +\
                                '"testbed=' + testbed + ' ' +\
                                'rate=' + str(legacyrate) + ' ' +\
@@ -996,7 +1056,7 @@ if __name__ == '__main__':
         # Deploy the actual firewall rules using set-firewall-rules.yaml
         print("Setting firewall rules")
         sys.stdout.flush()
-        firewall_cmd = 'ansible-playbook set-firewall-rules.yaml ' +\
+        firewall_cmd = ansible_playbook + 'set-firewall-rules.yaml ' +\
                        '--extra-vars ' +\
                        '"testbed=' + testbed + ' ' +\
                        'rules=' + nodes_rules + '"'
@@ -1012,7 +1072,7 @@ if __name__ == '__main__':
         # link metrics (and optionally tx and hello intervals
         print("Setting constant metrics")
         sys.stdout.flush()
-        metrics_cmd = 'ansible-playbook set-constant-metrics-olsrv1.yaml ' +\
+        metrics_cmd = ansible_playbook + 'set-constant-metrics-olsrv1.yaml ' +\
                       '--extra-vars ' +\
                       '"testbed=' + testbed
 
@@ -1039,7 +1099,7 @@ if __name__ == '__main__':
         # Start olsrd
         print("Starting olsrd")
         sys.stdout.flush()
-        start_olsr_cmd = 'ansible-playbook start-olsrv1.yaml ' +\
+        start_olsr_cmd = ansible_playbook + 'start-olsrv1.yaml ' +\
                          '--extra-vars ' +\
                          '"testbed=' + testbed + '"'
 
@@ -1132,7 +1192,7 @@ if __name__ == '__main__':
         if prince_configuration_file and not fixedintervals:
             print("Starting prince (%s)" % (prince_configuration_file,))
             sys.stdout.flush()
-            start_prince_cmd = 'ansible-playbook start-prince.yaml ' +\
+            start_prince_cmd = ansible_playbook + 'start-prince.yaml ' +\
                                '--extra-vars ' +\
                                '"testbed=' + testbed + ' ' +\
                                'hellomult=' + str(hello_mult) + ' ' +\
@@ -1177,7 +1237,7 @@ if __name__ == '__main__':
                                           stop_dumper_guard_time_seconds)
 
         print('Scheduling start/stop topology dumper')
-        sched_topodump_cmd = 'ansible-playbook ' +\
+        sched_topodump_cmd = ansible_playbook +\
                              'start-topology-dumper.yaml ' +\
                              '--extra-vars ' +\
                              '"testbed=' + testbed + ' ' +\
@@ -1230,7 +1290,7 @@ if __name__ == '__main__':
 
             start_strategy_converted_str = \
                 convert_nodes_id_to_hostname(start_strategy_list[strategy_idx])
-            sched_start_cmd = 'ansible-playbook ' +\
+            sched_start_cmd = ansible_playbook + '' +\
                               'restart-my-wifi-olsrv1.yaml ' +\
                               '--extra-vars ' +\
                               '"testbed=' + testbed + ' ' +\
@@ -1278,7 +1338,7 @@ if __name__ == '__main__':
     print('Collecting results on master node')
     sys.stdout.flush()
 
-    sched_fetch_cmd = 'ansible-playbook ' +\
+    sched_fetch_cmd = ansible_playbook +\
                       'collect-olsr-results.yaml ' +\
                       '--extra-vars ' +\
                       '"testbed=' + testbed + ' ' +\
