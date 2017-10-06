@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ $# -ne 16 ]; then
+if [ $# -ne 17 ]; then
 	echo "Usage: $0 <testbed> <channel> <legacy rate> <txpower> <strategy name> <strategy nrepeat> <strategy params> <graph params> <metrics seed> <exp name> <results_basedir> <weights (True|False)> <fixed intervals (True|False)> <verbose (True|False)> <copy results on local node (True|False)> <hello validity multiplier> <tc validity multiplier>"
 	exit 1
 fi
