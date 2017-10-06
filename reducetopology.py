@@ -292,8 +292,14 @@ def get_firewall_rules(graph, generator_string, seed=0,
 
     if generator_string.find(":") != -1:
         generator, parameters = generator_string.split(":")
-        gen_args = dict((p.split("=")[0], eval(p.split("=")[1])) for p in
-                        parameters.split(","))
+        gen_args = dict()
+        for p in parameters.split(","):
+            key, value = p.split("=")
+            try:
+                v = int(value)
+            except:
+                v = value
+            gen_args[key] = v
     else:
         generator = generator_string
         gen_args = dict()
