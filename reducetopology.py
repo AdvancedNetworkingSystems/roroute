@@ -88,7 +88,8 @@ def __get_links(m, sorted_map, nodes, disabled=True):
     :param nodes: array of node names
     :param disabled: if set to true, the function returns the disabled links,
     otherwise the active topology links
-    :return: disabled (or enabled) links dictionary
+    :return: disabled (or enabled) links dictionary. each entry of the
+    dictionary is a list of tuples (destination, cost)
     """
     dl = dict()
     n = m.get_shape()[0]
@@ -99,7 +100,8 @@ def __get_links(m, sorted_map, nodes, disabled=True):
             if r != c:
                 if (disabled and m[r, c] == 0) or \
                    (not disabled and m[r, c] != 0):
-                    dl[node].append(nodes[sorted_map[c]])
+                    dl[node].append((nodes[sorted_map[c]],
+                                     0 if disabled else m[r, c]))
     return dl
 
 
@@ -118,7 +120,7 @@ def __get_graph(adjacency_matrix, mapping, nodes):
     return G
 
 
-def __add_link_costs(enabled_links, seed, olsrv1=False):
+def __add_link_costs(enabled_links, seed, olsrv1=False, has_costs=False):
     """
     Given the dictionary of enabled links, return a dictionary of tuples
     where the first item of the tuple is the IP of the neighbor and the
@@ -126,8 +128,12 @@ def __add_link_costs(enabled_links, seed, olsrv1=False):
     :param enabled_links: dictionary of enabled links
     :param seed: a seed used to initialize the PRNGs
     :param olsrv1: generate link costs for olsrv1 or olsrv2
+    :param has_costs: if set to true, the costs are not randomly generated
+    but automatically taken from enabled_links
     :return: the dictionary with randomized link costs
     """
+    if has_costs:
+        return enabled_links
     if olsrv1:
         link_step = 0.005
         n_costs = 100
@@ -140,7 +146,7 @@ def __add_link_costs(enabled_links, seed, olsrv1=False):
     lc = dict()
     for node, neighbors in enabled_links.iteritems():
         lc[node] = []
-        for neigh in neighbors:
+        for (neigh, c) in neighbors:
             r_cost = -1
             if neigh in lc:
                 for (n, cost) in lc[neigh]:
@@ -162,8 +168,10 @@ def __stringify_disabled_links(disabled_links):
     :param disabled_links: disabled links dictionary
     :return: configuration string in the format "IP1:IPa,IPb,IPc;IP2:IPd,IPe"
     """
+    no_costs = dict(map(lambda (n, l): (n, map(lambda y: y[0], l)),
+                    disabled_links.iteritems()))
     merge_neighbors = dict((k, ','.join(v))
-                           for k, v in disabled_links.iteritems())
+                           for k, v in no_costs.iteritems())
     merge_nodes = ["%s:%s" % (k, v) for k, v in merge_neighbors.iteritems()]
     merge_all = ";".join(merge_nodes)
     return merge_all
@@ -360,9 +368,15 @@ def get_firewall_rules(graph, generator_string, seed=0,
     # transform this into a string usable by the scripts
     rules = __stringify_disabled_links(disabled_links)
 
+    # check whether the edges in the synthetic topology have a weight
+    u, v = synt_g.edges()[0]
+    has_costs = False
+    if "weight" in synt_g.get_edge_data(u, v).keys():
+        has_costs = True
     link_costs = __add_link_costs(__get_links(best_matrix, best_mapping,
                                               testbed_g.nodes(),
-                                              False), seed, olsrv1=olsrv1)
+                                              False), seed, olsrv1=olsrv1,
+                                  has_costs=has_costs)
     costs = __stringify_link_costs(link_costs, olsrv1=olsrv1)
 
     graph = __get_graph(best_matrix, best_mapping, testbed_g.nodes())
