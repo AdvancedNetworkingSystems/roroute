@@ -17,8 +17,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
+import math
 
 import networkx as nx
+import random as r
+
+
+def _seq(start, end, length):
+    if length == 1:
+        return [start]
+    else:
+        reverse = False
+        if end < start:
+            reverse = True
+        step = float(math.fabs(end - start)) / (length - 1)
+        v = [min(start, end) + i * step for i in range(length)]
+        if reverse:
+            v.reverse()
+        return v
 
 
 def line_diamond_graph(n):
@@ -96,4 +112,29 @@ def graphml_graph(n, filename):
     g = nx.read_graphml(filename)
     new_names = dict((i, int(i)) for i in g.nodes())
     nx.relabel_nodes(g, new_names, copy=False)
+    return g
+
+
+def backbone_graph(n, n_backbone, n_additional, seed=0):
+    """
+    Generates a graph with a fully meshed backbone and leaves. Leaves are
+    connected to 1 + n_additional links to the backbone nodes
+    :param n: total number of nodes
+    :param n_backbone: number of fully meshed nodes
+    :param n_additional: number of additional link to add to the backbone
+    :param seed: seed used to initialize random number generators
+    nodes for the leaves
+    """
+    r.seed(seed)
+    n_leaves = n - n_backbone
+    g = nx.complete_graph(n_backbone, create_using=nx.Graph())
+    costs = _seq(0.6, 1, 9)
+    link_costs = dict(((a, b), costs[r.randint(0, 8)]) for a, b in g.edges())
+    nx.set_edge_attributes(g, 'weight', link_costs)
+    links = range(n_backbone)
+    costs = _seq(1, 0.6, 1 + n_additional)
+    for i in range(n_leaves):
+        r.shuffle(links)
+        for j in range(1 + n_additional):
+            g.add_edge(i + n_backbone, links[j], weight=costs[j])
     return g
