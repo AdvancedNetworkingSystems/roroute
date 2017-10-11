@@ -125,6 +125,7 @@ def __add_link_costs(enabled_links, seed, olsrv1=False):
     second a randomized link cost
     :param enabled_links: dictionary of enabled links
     :param seed: a seed used to initialize the PRNGs
+    :param olsrv1: generate link costs for olsrv1 or olsrv2
     :return: the dictionary with randomized link costs
     """
     if olsrv1:
