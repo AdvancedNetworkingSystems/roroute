@@ -273,6 +273,8 @@ def get_firewall_rules(graph, generator_string, seed=0,
     where p1 and p2 are the argument names and v1 and v2 their respective
     values. The arguments should not include the parameter n, which is
     automatically obtained from the given graph
+    :param seed: seed used for random generators
+    :param olsrv1: if set to true, generate olsrv1-compatible link costs
     :param display: if set to True, shows a plot with the overlapping desired
     topology and the experiment topology, for a graphical comparison of the two
     :return: a pair where the first element is the firewall configuration of
