@@ -230,7 +230,17 @@ def print_matrix(m, mapping=None):
         sys.stdout.write("\n")
 
 
-def __compute_intervals(graph):
+def __get_intervals(nodes, dg, r, bc):
+    o_h = sum([v for k, v in dg.iteritems()]) / 2.0
+    hello_const = 1/o_h * sum([sqrt(bc[node] * dg[node]) for node in nodes])
+    o_lsa = len(nodes) * r / 5.0
+    tc_const = 1/o_lsa * sum([sqrt(bc[node] * r) for node in nodes])
+    return dict((node, (sqrt(dg[node] / bc[node]) * hello_const,
+                        sqrt(r / bc[node]) * tc_const))
+                for node in nodes)
+
+
+def __compute_intervals(graph, return_bc=False, use_degree=True):
     """
     Given a networkx graph, returns the poprouting hello and tc intervals to
     be set for each node
@@ -238,23 +248,31 @@ def __compute_intervals(graph):
     :return: a dictionary in the form "node: (hello, tc)"
     """
     bc = nx.betweenness_centrality(graph, weight="weight", endpoints=True)
-    # compute hello interval constants
-    o_h = sum([v for k, v in graph.degree().iteritems()]) / 2.0
-    hello_const = 1/o_h * sum([sqrt(bc[node] * graph.degree()[node])
-                               for node in graph.nodes()])
-    # compute tc interval constants
+
+    dg = dict((v, 1) for v in graph.nodes())
+    r = len(graph.nodes())
+    ints_no_degree = __get_intervals(graph.nodes(), dg, r, bc)
+    dg = dict((v, d) for v, d in graph.degree().iteritems())
     r = len(graph.edges())
-    o_lsa = len(graph.nodes()) * r / 5.0
-    tc_const = 1/o_lsa * sum([sqrt(bc[node] * r) for node in graph.nodes()])
+    ints_degree = __get_intervals(graph.nodes(), dg, r, bc)
+
     # return a dictionary node -> (hello, tc)
-    ints = dict((node, (sqrt(graph.degree()[node] / bc[node]) * hello_const,
-                        sqrt(r / bc[node]) * tc_const))
-                for node in graph.nodes())
+    if not return_bc:
+        if use_degree:
+            return ints_degree
+        else:
+            return ints_no_degree
+    else:
+        ints = dict((node, (ints_degree[node][0], ints_degree[node][1],
+                            ints_no_degree[node][0], ints_no_degree[node][1],
+                            bc[node], graph.degree()[node]))
+                    for node in graph.nodes())
     return ints
 
 
 def get_firewall_rules(graph, generator_string, seed=0,
-                       olsrv1=False, display=False):
+                       olsrv1=False, display=False, print_csv=False,
+                       single_interface=False):
     """
     Given a networkx graph representing the real topology of a testbed, returns
     the firewall rules to be applied to obtain a synthetic topology with the
@@ -277,6 +295,10 @@ def get_firewall_rules(graph, generator_string, seed=0,
     :param olsrv1: if set to true, generate olsrv1-compatible link costs
     :param display: if set to True, shows a plot with the overlapping desired
     topology and the experiment topology, for a graphical comparison of the two
+    :param print_csv: if true, prints a csv table with node id, times,
+    betweennes centrality and degree, to be used for plotting and analysis
+    :param single_interface: if true, the degree d_i is forced to 1 to
+    represent a single interface node
     :return: a pair where the first element is the firewall configuration of
     links to be disabled, while the second is the matching score
     """
@@ -382,7 +404,15 @@ def get_firewall_rules(graph, generator_string, seed=0,
     costs = __stringify_link_costs(link_costs, olsrv1=olsrv1)
 
     graph = __get_graph(best_matrix, best_mapping, testbed_g.nodes())
-    intervals = __stringify_intervals(__compute_intervals(graph))
+    intervals = __stringify_intervals(__compute_intervals(graph,
+                                                          use_degree=not
+                                                          single_interface))
+
+    if print_csv:
+        intv = __compute_intervals(graph, return_bc=True)
+        print("node,h,tc,hnd,tcnd,bc,d")
+        for n, (h, tc, h2, tc2, bc, d) in intv.iteritems():
+            print("%s,%f,%f,%f,%f,%f,%d" % (n, h, tc, h2, tc2, bc, d))
 
     # we return the configuration string and the measure of the match
     return rules, costs, intervals, best_score

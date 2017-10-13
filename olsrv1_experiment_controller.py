@@ -615,7 +615,8 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
                                                         power,
                                                         graph_params,
                                                         metricsseed,
-                                                        expdir):
+                                                        expdir,
+                                                        singleinterface):
 
     #######################################################################
     # Flush firewall rules
@@ -733,7 +734,8 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     nodes_rules, nodes_metrics, intervals, score =\
         reducetopology.get_firewall_rules(current_graph, graph_params,
                                           seed=metricsseed,
-                                          olsrv1=True)
+                                          olsrv1=True,
+                                          single_interface=singleinterface)
 
     #######################################################################
     # Deploy the actual firewall rules using set-firewall-rules.yaml
@@ -862,6 +864,12 @@ if __name__ == '__main__':
                         default=False, action="store_true")
     parser.add_argument("--fixedintervals", dest="fixedintervals",
                         default=False, action="store_true")
+    parser.add_argument("--singleinterface", dest="singleinterface",
+                        default=False, action="store_true",
+                        help="If set to true in combination with "
+                             "--fixedintervals, the computation of the "
+                             "intervals considers the degree d_i to be 1 for "
+                             "all node, corresponding to a single interface")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         default=False, action="store_true")
     parser.add_argument('--hellomult', dest='hello_mult',
@@ -882,6 +890,7 @@ if __name__ == '__main__':
     nrepeat = args.nrepeat
     strategyparam = args.strategyparam
     fixedintervals = args.fixedintervals
+    singleinterface = args.singleinterface
     weights = args.weights
     verbose = args.verbose
     hello_mult = args.hello_mult
@@ -930,7 +939,8 @@ if __name__ == '__main__':
                                                             graphparams,
                                                             metricsseed,
                                                             homedir + '/' +
-                                                            expname)
+                                                            expname,
+                                                            singleinterface)
 
     # Loop index
     while True:
