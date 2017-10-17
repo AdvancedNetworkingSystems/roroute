@@ -110,7 +110,7 @@ def graphml_graph(n, filename):
     :return: a networkx graph representing the topology in the given file
     """
     g = nx.read_graphml(filename)
-    new_names = dict((i, int(i)) for i in g.nodes())
+    new_names = dict((g.nodes()[i], i) for i in range(len(g.nodes())))
     nx.relabel_nodes(g, new_names, copy=False)
     return g
 
