@@ -1023,7 +1023,10 @@ if __name__ == '__main__':
 
         prince_configuration_file = ''
         if prince_running:
-            prince_configuration_file = 'prince_conf_c_olsrv1.json'
+            if not singleinterface:
+                prince_configuration_file = 'prince_conf_c_olsrv1.json'
+            else:
+                prince_configuration_file = 'prince_conf_c_olsrv1_d0.json'
             prince_running = True
 
         #######################################################################
