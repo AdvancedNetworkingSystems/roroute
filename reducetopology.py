@@ -270,7 +270,7 @@ def __compute_intervals(graph, return_bc=False, use_degree=True):
     return ints
 
 
-def get_firewall_rules(graph, generator_string, seed=0,
+def get_firewall_rules(graph, generator_string, weights, seed=0,
                        olsrv1=False, display=False, print_csv=False,
                        single_interface=False):
     """
@@ -291,6 +291,9 @@ def get_firewall_rules(graph, generator_string, seed=0,
     where p1 and p2 are the argument names and v1 and v2 their respective
     values. The arguments should not include the parameter n, which is
     automatically obtained from the given graph
+    :param weights: if True, it means that the experiment should generate
+    per-link random weights, and this must be taken into account when
+    computing the poprow timers
     :param seed: seed used for random generators
     :param olsrv1: if set to true, generate olsrv1-compatible link costs
     :param display: if set to True, shows a plot with the overlapping desired
@@ -404,6 +407,10 @@ def get_firewall_rules(graph, generator_string, seed=0,
     costs = __stringify_link_costs(link_costs, olsrv1=olsrv1)
 
     graph = __get_graph(best_matrix, best_mapping, testbed_g.nodes())
+    if weights:
+        for s, csts in link_costs.iteritems():
+            for (d, cost) in csts:
+                nx.set_edge_attributes(graph, "weight", {(s, d): cost})
     intervals = __stringify_intervals(__compute_intervals(graph,
                                                           use_degree=not
                                                           single_interface))

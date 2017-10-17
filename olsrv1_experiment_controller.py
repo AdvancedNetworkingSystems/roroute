@@ -616,7 +616,8 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
                                                         graph_params,
                                                         metricsseed,
                                                         expdir,
-                                                        singleinterface):
+                                                        singleinterface,
+                                                        weights):
 
     #######################################################################
     # Flush firewall rules
@@ -732,7 +733,7 @@ def preliminary_net_setup_for_firewall_rules_deployment(testbed,
     # nodes_rules = 'nuc0-20:nuc0-43,nuc0-21;nuc0-43:nuc0-20,nuc0-21'
     # nodes_rules = '10.1.0.20:10.1.0.43;10.1.0.43:10.1.0.20'
     nodes_rules, nodes_metrics, intervals, score =\
-        reducetopology.get_firewall_rules(current_graph, graph_params,
+        reducetopology.get_firewall_rules(current_graph, graph_params, weights,
                                           seed=metricsseed,
                                           olsrv1=True,
                                           single_interface=singleinterface)
@@ -940,7 +941,8 @@ if __name__ == '__main__':
                                                             metricsseed,
                                                             homedir + '/' +
                                                             expname,
-                                                            singleinterface)
+                                                            singleinterface,
+                                                            weights)
 
     # Loop index
     while True:
