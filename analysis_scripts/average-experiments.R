@@ -9,7 +9,8 @@ get.experiment = function(folder, r, n, prince) {
                               sep="/"),
                         sep=" ")
     names(routes) = c("total", "broken", "loop")
-    routes = routes[min(which(routes$broken != 0)):nrow(routes),]
+    if (!all(routes$broken == 0))
+        routes = routes[min(which(routes$broken != 0)):nrow(routes),]
     routes$t = 1:nrow(routes)
     routes$time = routes$t * 0.3
     routes$rep = n
