@@ -135,7 +135,7 @@ if __name__ == '__main__':
                     bc = log_reader.next()[4]
                     exp_bcns[nn] = bc
             else:
-                exp_bcns[nn] = -1
+                exp_bcns[nn] = "-1"
 
         tc_intervals = {}
         hello_intervals = {}
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                                 tc_intervals[nn] = float(l.split(':')[1])
 
         for nn in nodes_name_list:
-            out.write("%s,%s,%d,%f,%f,%d,%d,%f,%f\n" %
+            out.write("%s,%s,%d,%f,%f,%d,%d,%f,%s\n" %
                       (nn, node_name_to_ip[nn], stridx, hello_intervals[nn],
                        tc_intervals[nn], 1 if deadnode_name == nn else 0,
                        0 if node_name_to_ip[nn] in cn else 1,
