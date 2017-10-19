@@ -62,6 +62,23 @@ t.cex <- function(timer) {
     0.7
 }
 
+get.exp.name <- function(path) {
+    parts <- unlist(strsplit(path, "/"))
+    for (p in parts) {
+        if (substr(p, 1, 1) == "t" &
+            (substr(p, nchar(p)-7, nchar(p)) == "_summary" |
+             substr(p, nchar(p)-7, nchar(p)) == "_results"
+             )
+            ) {
+            n = substr(p, 2, nchar(p)-8)
+            if (suppressWarnings(!is.na(as.numeric(n)))) {
+                return(substr(p, 1, nchar(p)-8))
+            }
+        }
+    }
+    return("")
+}
+
 plot.routes <- function(outputFile, xlim, ylim, data, leg.pos='topright', outputDir = './') {
 
     done <- myps(outputFile = outputFile, width=plot.width, height=plot.height, outputDir=outputDir)

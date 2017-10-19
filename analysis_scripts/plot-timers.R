@@ -18,7 +18,7 @@ plot.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', outputDir 
     d$k = 1:nrow(d)
 
     plot.new()
-    plot.window(xlim=c(0, nrow(d)+1), ylim=c(0, round(max(d$h, d$tc, d$hnd, d$tcnd)) + 0.5), yaxs="i", xaxs="i")
+    plot.window(xlim=c(0, nrow(d)+1), ylim=c(0, round(max(d$h, d$tc, d$hnd, d$tcnd)) + 1.1), yaxs="i", xaxs="i")
 
     abline(h=2, lwd=t.lwd("th"), col=t.col("th"), lty=t.lty("th"))
     abline(h=5, lwd=t.lwd("ta"), col=t.col("ta"), lty=t.lty("ta"))
@@ -26,6 +26,7 @@ plot.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', outputDir 
     plot.serie(d$k, d$tc  , pt.col=d$ap, serie="tc")
     plot.serie(d$k, d$hnd , pt.col=d$ap, serie="hnd")
     plot.serie(d$k, d$tcnd, pt.col=d$ap, serie="tcnd")
+    text(d$k, d$tc+0.5, gsub("10.1.0.", "", d$node), cex=.5)
 
     axis(1, padj=-.7, las=1, lwd=0, lwd.ticks=1)
     axis(2, hadj=.7, las=1, lwd=0, lwd.ticks=1)
@@ -54,12 +55,9 @@ plot.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', outputDir 
 args = commandArgs(trailingOnly=T)
 
 if (interactive()) {
-    args = c('./backbone_theory.csv',
-             './caveman.csv',
-             './waxman.csv',
-             './startgraph_waxman.csv',
-             './startgraph_caveman.csv',
-             './t100_summary/0/olsrd2_vanilla/start_graph.csv'
+    args = c(
+             './t100_summary/',
+             './t110_summary'
              )
 } else {
     if (length(args) == 0) {
@@ -67,10 +65,38 @@ if (interactive()) {
     }
 }
 
-for (f in args) {
+plot.csv <- function(f, expname="", strategy="") {
+    if (!file.exists(f)) {
+        print(paste("No file found. Skipping", f))
+        return()
+    }
     d <- read.csv(f)
+    if (expname == "") {
+        base = basename(f)
+        name = unlist(strsplit(base, "[.]"))[1]
+        outname = name
+    } else {
+        outname = paste("timers", expname, strategy, "theory-bybc", sep="-")
+    }
     outdir = paste(dirname(f), "/", sep="")
-    base = basename(f)
-    name = unlist(strsplit(base, "[.]"))[1]
-    plot.timers(name, d, "bc", "nodes by decreasing $b_i$", leg.pos='topright', outputDir = outdir)
+    plot.timers(outname, d, "bc", "nodes by decreasing $b_i$", leg.pos='topright', outputDir = outdir)
+}
+
+for (f in args) {
+    ext = substr(f, nchar(f)-3, nchar(f))
+    if (ext == ".csv") {
+        filename = f
+        plot.csv(f)
+    } else {
+        expname = get.exp.name(f)
+        dirs = list.dirs(f, recursive=F)
+        for (d in dirs) {
+            spl = unlist(strsplit(d, "/"))
+            fld = spl[length(spl)]
+            if (suppressWarnings(!is.na(as.numeric(fld)))) {
+                filename = paste(d, "prince/start_graph.csv", sep="/")
+                plot.csv(filename, expname, fld)
+            }
+        }
+    }
 }

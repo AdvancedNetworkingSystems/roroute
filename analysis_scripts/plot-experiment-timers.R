@@ -8,19 +8,6 @@ plot.height <- 184.546607/72/1.25
 plot.margin <- c(3.1, 3.3, 2.0, 0.4)
 leg.inset <- c(0, 0, 0, 0)
 
-get.exp.name <- function(path) {
-    parts <- unlist(strsplit(path, "/"))
-    for (p in parts) {
-        if (substr(p, 1, 1) == "t" & substr(p, nchar(p)-7, nchar(p)) == "_summary") {
-            n = substr(p, 2, nchar(p)-8)
-            if (suppressWarnings(!is.na(as.numeric(n)))) {
-                return(substr(p, 1, nchar(p)-8))
-            }
-        }
-    }
-    return("")
-}
-
 plot.exp.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', outputDir = './') {
 
     done <- myps(outputFile = outputFile, width=plot.width, height=plot.height, outputDir=outputDir)
@@ -39,6 +26,7 @@ plot.exp.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', output
     kp = subset(d, killed==1)
     points(kp$k, kp$h)
     points(kp$k, kp$tc)
+    text(d$k, d$tc+0.5, gsub("nuc0-", "", d$node), cex=.5)
 
     axis(1, padj=-.7, las=1, lwd=0, lwd.ticks=1)
     axis(2, hadj=.7, las=1, lwd=0, lwd.ticks=1)
@@ -69,8 +57,8 @@ args = commandArgs(trailingOnly=T)
 folder = args[1]
 
 if (interactive()) {
-    args = c('./t100_summary/intervals.csv',
-             './t110_summary/intervals.csv'
+    args = c('./t100_summary',
+             './t110_summary'
              )
 } else {
     if (length(args) == 0) {
@@ -91,9 +79,9 @@ for (f in args) {
         next
     }
     d <- read.csv(filename)
-    outdir = paste(dirname(f), "/", sep="")
+    outdir = paste(dirname(filename), "/", sep="")
     ddply(d, c("strategy"), function(x) {
         plot.name = paste("timers", expname, x[1,]$strategy, "bybc", sep="-")
-        plot.exp.timers(plot.name, x, "bc", "nodes by decreasing $b_i$", leg.pos='topright', outputDir = outdir)
+        plot.exp.timers(plot.name, x, "expbc", "nodes by decreasing $b_i$", leg.pos='topright', outputDir = outdir)
     })
 }
