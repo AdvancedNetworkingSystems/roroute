@@ -22,6 +22,7 @@ import argparse
 import csv
 import networkx as nx
 import os
+from os.path import isfile
 
 
 def get_name_all_nodes(exp_base_dir_name_str):
@@ -128,10 +129,13 @@ if __name__ == '__main__':
         for nn in nodes_name_list:
             prince_path = expdir + '/' + nn + '_' + expname + \
                           '/' + str(stridx) + '/prince/prince.log'
-            with open(prince_path, 'r') as prince_log:
-                log_reader = csv.reader(prince_log, delimiter='\t')
-                bc = log_reader.next()[4]
-                exp_bcns[nn] = bc
+            if isfile(prince_path):
+                with open(prince_path, 'r') as prince_log:
+                    log_reader = csv.reader(prince_log, delimiter='\t')
+                    bc = log_reader.next()[4]
+                    exp_bcns[nn] = bc
+            else:
+                exp_bcns[nn] = -1
 
         tc_intervals = {}
         hello_intervals = {}
