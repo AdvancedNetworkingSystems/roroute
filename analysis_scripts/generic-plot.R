@@ -9,15 +9,58 @@ source('ccs.palettes.R')
 
 palette(brewer.pal(4, "RdYlBu"))
 a <- palette()
+np <- c('black', a[4], a[1], a[2])
+a[3] <- a[1]
 a[2] <- a[4]
 a[1] <- 'black'
-palette(a)
+palette(np)
 
 #graphs params
 plot.width <- 308.43/72
 plot.height <- 184.546607/72/1.25
 plot.margin <- c(3.1, 3.3, 0.4, 0.4)
 leg.inset <- c(0, 0, 0, 0)
+
+colorize <- function(color) {
+    col = col2rgb(3)
+    return(rgb(col[1], col[2], col[3], 127, maxColorValue=255))
+    # return(rgb(col[1], col[2], col[3], 60, maxColorValue=255))
+}
+color.ap <- Vectorize(colorize)
+
+plot.serie <- function(x, y, pt.col, serie) {
+    lines(x, y, col=t.col(serie), lty=t.lty(serie), lwd=t.lwd(serie))
+    point.color = ifelse(pt.col == 1, color.ap(t.col(serie)), t.col(serie))
+    points(x, y, col=point.color, pch=t.pch(serie), cex=t.cex(serie))
+}
+
+t.col <- function(timer) {
+    ifelse(timer == "th", 3,
+    ifelse(timer == "ta", 3,
+    ifelse(timer == "h", 1,
+    ifelse(timer == "tc", 1,
+    ifelse(timer == "hnd", 2, 2)))))
+}
+t.pch <- function(timer) {
+    ifelse(timer == "th", NA,
+    ifelse(timer == "ta", NA,
+    ifelse(timer == "h", 20,
+    ifelse(timer == "tc", 18,
+    ifelse(timer == "hnd", 4, 3)))))
+}
+t.lty <- function(timer) {
+    ifelse(timer == "th", 1,
+    ifelse(timer == "ta", 2,
+    ifelse(timer == "h", 1,
+    ifelse(timer == "tc", 2,
+    ifelse(timer == "hnd", 1, 2)))))
+}
+t.lwd <- function(timer) {
+    2
+}
+t.cex <- function(timer) {
+    0.7
+}
 
 plot.routes <- function(outputFile, xlim, ylim, data, leg.pos='topright', outputDir = './') {
 
