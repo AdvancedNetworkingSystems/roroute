@@ -19,6 +19,7 @@
 #
 
 import argparse
+import csv
 import networkx as nx
 import os
 
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     strategies = get_strategies(expdir, nodes_name_list[0], expname)
 
     out = open("%s_summary/intervals.csv" % expname, "w")
-    out.write("node,ip,strategy,h,tc,killed,ap,bc\n")
+    out.write("node,ip,strategy,h,tc,killed,ap,bc,expbc\n")
 
     for stridx in strategies:
 
@@ -122,6 +123,16 @@ if __name__ == '__main__':
         bcns = [(node_ip_to_name[n], bcn[n]) for (n, bcn[n]) in
                 sorted(bcn.items(), key=lambda x: x[1], reverse=True)]
 
+        # get bc compute by prince in the experiment
+        exp_bcns = {}
+        for nn in nodes_name_list:
+            prince_path = expdir + '/' + nn + '_' + expname + \
+                          '/' + str(stridx) + '/prince/prince.log'
+            with open(prince_path, 'r') as prince_log:
+                log_reader = csv.reader(prince_log, delimiter='\t')
+                bc = log_reader.next()[4]
+                exp_bcns[nn] = bc
+
         tc_intervals = {}
         hello_intervals = {}
         for nn in nodes_name_list:
@@ -144,10 +155,10 @@ if __name__ == '__main__':
                                 tc_intervals[nn] = float(l.split(':')[1])
 
         for nn in nodes_name_list:
-            out.write("%s,%s,%d,%f,%f,%d,%d,%f\n" %
+            out.write("%s,%s,%d,%f,%f,%d,%d,%f,%f\n" %
                       (nn, node_name_to_ip[nn], stridx, hello_intervals[nn],
                        tc_intervals[nn], 1 if deadnode_name == nn else 0,
                        0 if node_name_to_ip[nn] in cn else 1,
-                       bcn[node_name_to_ip[nn]]))
+                       bcn[node_name_to_ip[nn]], exp_bcns[nn]))
 
     out.close()
