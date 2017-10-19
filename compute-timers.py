@@ -17,10 +17,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 #
-# Example usage:
-# rules, score = get_firewall_rules(G, "random_regular_graph:d=4,seed=0")
-#
 
+from os import listdir
+from os.path import isdir
 import networkx as nx
 import sys
 from math import sqrt
@@ -66,6 +65,19 @@ def __compute_intervals(graph, return_bc=False, use_degree=True):
     return ints
 
 
+def get_strategies(path):
+    '''Return the list of repetitions of the experiment'''
+    strategies = []
+    for d in listdir(path):
+        if isdir("%s/%s" % (path, d)):
+            try:
+                index = int(d)
+                strategies.append(index)
+            except ValueError:
+                continue
+    return strategies
+
+
 def write_timers(graph):
 
     out_fn = graph.replace(".graphml", "") + ".csv"
@@ -82,8 +94,16 @@ def write_timers(graph):
     out.close()
 
 
-if len(sys.argv) != 2:
-    print("Usage: %s <graph.graphml>" % sys.argv[0])
+if len(sys.argv) < 2:
+    print("Usage: %s list of graphml files or list of folders" % sys.argv[0])
     sys.exit(1)
 
-write_timers(sys.argv[1])
+for i in range(1, len(sys.argv)):
+    f = sys.argv[i]
+    if f.endswith(".graphml"):
+        write_timers(sys.argv[i])
+    else:
+        strategies = get_strategies(f)
+        for s in strategies:
+            fn = "%s/%d/prince/start_graph.graphml" % (f, s)
+            write_timers(fn)
