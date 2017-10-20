@@ -12,8 +12,15 @@ metrics=$2
 hello_mult=$3
 tc_mult=$4
 
+disablelq=$5
+if [ "$disablelq" == "True" ]; then
+	disablelq_str = "LinkQualityLevel 0"
+else
+	disablelq_str = ""
+fi
+
 # timers string format: "IPnode1:hello,tc;..."
-timers=$5
+timers=$6
 
 opkg_path=`which opkg`
 if [ -z "$opkg_path" ]; then
@@ -44,7 +51,7 @@ if [ "${metrics}" != "undefined" ]; then
 fi
 
 timers_out=""
-if [ $# -eq 5 ]; then
+if [ $# -eq 6 ]; then
 	# we also have to set fixed timers
 	for n in $(echo $timers | sed -e "s/;/ /g")
 	do
@@ -83,6 +90,8 @@ LoadPlugin "olsrd_txtinfo.so.1.1" {
 LoadPlugin "olsrd_poprouting.so.0.1" {
   PlParam "port" "1234"
 }
+
+${disablelq_str}
 
 InterfaceDefaults
 {

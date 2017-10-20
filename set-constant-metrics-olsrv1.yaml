@@ -7,6 +7,9 @@
   - name: set nodes intervals
     set_fact:
       intervals: ""
+  - name: enable/disable link quality
+    set_fact:
+      disablelq: "False"
   - name: set hello multiplier
     set_fact:
       hellomult: 10
@@ -14,7 +17,7 @@
     set_fact:
       tcmult: 60
   - name: deploy constant metrics
-    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }} {{ hellomult }} {{ tcmult }} {{intervals}}"
+    command: "/usr/bin/env sh set_constant_metrics_olsrv1.sh {{ testbed }} {{ metrics }} {{ hellomult }} {{ tcmult }} {{ disablelq }} {{intervals}}"
     args:
       chdir: "{{ ansible_env.HOME }}"
 

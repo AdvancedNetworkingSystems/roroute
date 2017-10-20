@@ -871,6 +871,10 @@ if __name__ == '__main__':
                              "--fixedintervals, the computation of the "
                              "intervals considers the degree d_i to be 1 for "
                              "all node, corresponding to a single interface")
+    parser.add_argument("--disablelq", dest="disablelq",
+                        default=False, action="store_true",
+                        help="If set to true in ETX metric is disabled and "
+                             "only hop counts matter")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         default=False, action="store_true")
     parser.add_argument('--hellomult', dest='hello_mult',
@@ -892,6 +896,7 @@ if __name__ == '__main__':
     strategyparam = args.strategyparam
     fixedintervals = args.fixedintervals
     singleinterface = args.singleinterface
+    disablelq = args.disablelq
     weights = args.weights
     verbose = args.verbose
     hello_mult = args.hello_mult
@@ -1101,6 +1106,11 @@ if __name__ == '__main__':
             metrics_cmd += ' intervals=' + intervals + '"'
 
         metrics_cmd = metrics_cmd.rstrip('"')
+        if disablelq:
+            metrics_cmd += ' disablelq=True'
+        else:
+            metrics_cmd += ' disablelq=False'
+
         metrics_cmd += ' hellomult=' + str(hello_mult)
         metrics_cmd += ' tcmult=' + str(tc_mult) + '"'
 
