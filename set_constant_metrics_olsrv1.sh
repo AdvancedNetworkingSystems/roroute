@@ -13,10 +13,9 @@ hello_mult=$3
 tc_mult=$4
 
 disablelq=$5
+disablelq_str=""
 if [ "$disablelq" = "True" ]; then
-	disablelq_str = "LinkQualityLevel 0"
-else
-	disablelq_str = ""
+	disablelq_str="LinkQualityLevel 0"
 fi
 
 # timers string format: "IPnode1:hello,tc;..."
