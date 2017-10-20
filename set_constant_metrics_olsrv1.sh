@@ -13,7 +13,7 @@ hello_mult=$3
 tc_mult=$4
 
 disablelq=$5
-if [ "$disablelq" == "True" ]; then
+if [ "$disablelq" = "True" ]; then
 	disablelq_str = "LinkQualityLevel 0"
 else
 	disablelq_str = ""
