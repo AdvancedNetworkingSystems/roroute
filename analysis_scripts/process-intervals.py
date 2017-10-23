@@ -132,8 +132,11 @@ if __name__ == '__main__':
             if isfile(prince_path):
                 with open(prince_path, 'r') as prince_log:
                     log_reader = csv.reader(prince_log, delimiter='\t')
-                    bc = log_reader.next()[4]
-                    exp_bcns[nn] = bc
+                    try:
+                        bc = log_reader.next()[4]
+                        exp_bcns[nn] = bc
+                    except StopIteration:
+                        exp_bcns[nn] = "-1"
             else:
                 exp_bcns[nn] = "-1"
 

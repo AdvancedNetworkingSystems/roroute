@@ -49,7 +49,7 @@ integral = ddply(experiments, c("rep", "prince", "experiment"), function(x) {
 
 average = ddply(integral, c("prince", "experiment"), function(x) {
     avg = mean(x$i)
-    if (nrow(x) > 1) {
+    if (nrow(x) > 1 & sd(x$i) > 0) {
         ci = t.test(x$i)
         lc = ci$conf.int[1]
         uc = ci$conf.int[2]
