@@ -39,7 +39,7 @@ plot.exp.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', output
     legend(
         leg.pos,
         legend=c('$t_H$', '$t_A$', '$t_H(i)$', '$t_A(i)$'),
-        ncol=3,
+        ncol=2,
         inset=c(0, -0.3),
         col    = t.col(c("th", "ta", "h", "tc")),
         lty    = t.lty(c("th", "ta", "h", "tc")),
@@ -53,8 +53,6 @@ plot.exp.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', output
     done()
 }
 args = commandArgs(trailingOnly=T)
-
-folder = args[1]
 
 if (interactive()) {
     args = c('./t100_summary',
