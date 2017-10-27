@@ -43,3 +43,11 @@
 "t301_summary","shortcut",0,0,10,60,0
 "t302_summary","shortcut",0,0,3,60,1
 "t303_summary","shortcut",0,0,10,60,1
+"t240_summary","waxman",+0,0,10,60,0
+"t241_summary","waxman",+1,0,10,60,0
+"t250_summary","waxman",+0,1,10,60,0
+"t251_summary","waxman",+1,1,10,60,0
+"t305_summary","shortcut",0,0,3,60,1
+"t304_summary","shortcut",0,0,10,60,1
+"t262_summary","caveman",+2,0,10,60,0
+"t272_summary","caveman",+2,1,10,60,0
