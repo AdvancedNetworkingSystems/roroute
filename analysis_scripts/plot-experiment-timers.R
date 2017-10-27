@@ -50,7 +50,7 @@ plot.exp.timers <- function(outputFile, d, idx, xlab, leg.pos='topright', output
     par(xpd=T)
     legend(
         leg.pos,
-        legend=c('$t_{\\texttt{H}}$', '$t_{\\texttt{A}}$', '$t_{\\texttt{H}}(i)$', '$t_{\\texttt{A}}(i)$', '$b_i$'),
+        legend=c('$t_{\\texttt{H}}$', '$t_{\\texttt{TC}}$', '$t_{\\texttt{H}}(i)$', '$t_{\\texttt{TC}}(i)$', '$b_i$'),
         ncol=3,
         inset=c(0, -0.3),
         col    = c(t.col(c("th", "ta", "h", "tc")), 2),
