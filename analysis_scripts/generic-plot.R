@@ -82,6 +82,7 @@ get.exp.name <- function(path) {
 plot.routes <- function(outputFile, xlim, ylim, data, leg.pos='topright', outputDir = './') {
 
     done <- myps(outputFile = outputFile, width=plot.width, height=plot.height, outputDir=outputDir)
+    plot.margin <- c(3.1, 3.3, 2.0, 0.4)
 
     par(mar=plot.margin, xpd=F)
 
@@ -105,11 +106,12 @@ plot.routes <- function(outputFile, xlim, ylim, data, leg.pos='topright', output
     title(xlab="time (s)", line=1.9)
     title(ylab="paths", line=2.1)
 
+    par(xpd=T)
     legend(
         leg.pos,
         legend=c('OLSR (broken)', 'OLSR (loop)', 'Poprouting (broken)', 'Poprouting (loop)'),
-        ncol=1,
-        inset=c(0, 0),
+        ncol=2,
+        inset=c(0, -0.3),
         col=c(1, 1, 2, 2),
         lty=c(1, 2, 1, 2),
         lwd=3,

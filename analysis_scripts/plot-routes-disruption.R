@@ -6,6 +6,11 @@ args = commandArgs(trailingOnly=T)
 # args = c("t9_summary")
 
 folder = args[1]
+if (length(args) == 2) {
+    max.x = as.numeric(args[2])
+} else {
+    max.x = NA
+}
 
 experiments = read.table(paste(folder, "experiments.csv", sep="/"), sep=" ")
 names(experiments) = c("total", "broken", "loop", "t", "time", "rep", "prince", "experiment")
@@ -13,9 +18,9 @@ names(experiments) = c("total", "broken", "loop", "t", "time", "rep", "prince", 
 ddply(experiments, c("rep", "experiment"), function(x) {
 	experiment = x[1,]$experiment
 	rep = x[1,]$rep
-	xlim=c(0, max(experiments$time) * 1.05)
+	xlim=c(0, ifelse(is.na(max.x), max(experiments$time) * 1.05, max.x))
 	ylim=c(0, max(max(experiments$broken), max(experiments$loop)) *1.05)
-	plot.routes(paste(experiment, rep, sep='-'), xlim, ylim, x, leg.pos='bottomleft', outputDir = './')
+	plot.routes(paste(experiment, rep, sep='-'), xlim, ylim, x, leg.pos='topright', outputDir = './')
 })
 
 # ddply(flow.data, .(size), function(x) {
