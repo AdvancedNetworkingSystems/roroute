@@ -1,0 +1,463 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key attr.name="weight" attr.type="double" for="edge" id="d0" />
+  <graph edgedefault="undirected">
+    <node id="10.0.0.39" />
+    <node id="10.0.0.38" />
+    <node id="10.0.0.33" />
+    <node id="10.0.0.32" />
+    <node id="10.0.0.31" />
+    <node id="10.0.0.30" />
+    <node id="10.0.0.37" />
+    <node id="10.0.0.36" />
+    <node id="10.0.0.35" />
+    <node id="10.0.0.34" />
+    <node id="10.0.0.15" />
+    <node id="10.0.0.14" />
+    <node id="10.0.0.17" />
+    <node id="10.0.0.16" />
+    <node id="10.0.0.11" />
+    <node id="10.0.0.10" />
+    <node id="10.0.0.13" />
+    <node id="10.0.0.12" />
+    <node id="10.0.0.19" />
+    <node id="10.0.0.18" />
+    <node id="10.0.0.9" />
+    <node id="10.0.0.8" />
+    <node id="10.0.0.5" />
+    <node id="10.0.0.4" />
+    <node id="10.0.0.7" />
+    <node id="10.0.0.6" />
+    <node id="10.0.0.1" />
+    <node id="10.0.0.0" />
+    <node id="10.0.0.3" />
+    <node id="10.0.0.2" />
+    <node id="10.0.0.28" />
+    <node id="10.0.0.29" />
+    <node id="10.0.0.24" />
+    <node id="10.0.0.25" />
+    <node id="10.0.0.26" />
+    <node id="10.0.0.27" />
+    <node id="10.0.0.20" />
+    <node id="10.0.0.21" />
+    <node id="10.0.0.22" />
+    <node id="10.0.0.23" />
+    <edge source="10.0.0.39" target="10.0.0.10">
+      <data key="d0">0.925</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.13">
+      <data key="d0">0.88</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.12">
+      <data key="d0">0.71</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.19">
+      <data key="d0">0.63</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.24">
+      <data key="d0">0.895</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.25">
+      <data key="d0">0.65</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.26">
+      <data key="d0">0.74</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.3">
+      <data key="d0">0.755</data>
+    </edge>
+    <edge source="10.0.0.39" target="10.0.0.2">
+      <data key="d0">0.7</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.18">
+      <data key="d0">0.75</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.9">
+      <data key="d0">0.64</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.8">
+      <data key="d0">0.88</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.4">
+      <data key="d0">0.81</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.33">
+      <data key="d0">0.79</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.32">
+      <data key="d0">0.955</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.27">
+      <data key="d0">0.955</data>
+    </edge>
+    <edge source="10.0.0.38" target="10.0.0.28">
+      <data key="d0">0.625</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.12">
+      <data key="d0">0.955</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.18">
+      <data key="d0">0.655</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.9">
+      <data key="d0">0.865</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.8">
+      <data key="d0">0.95</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.4">
+      <data key="d0">0.845</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.32">
+      <data key="d0">0.995</data>
+    </edge>
+    <edge source="10.0.0.33" target="10.0.0.37">
+      <data key="d0">0.905</data>
+    </edge>
+    <edge source="10.0.0.32" target="10.0.0.18">
+      <data key="d0">0.735</data>
+    </edge>
+    <edge source="10.0.0.32" target="10.0.0.9">
+      <data key="d0">0.55</data>
+    </edge>
+    <edge source="10.0.0.32" target="10.0.0.8">
+      <data key="d0">0.715</data>
+    </edge>
+    <edge source="10.0.0.32" target="10.0.0.4">
+      <data key="d0">0.805</data>
+    </edge>
+    <edge source="10.0.0.32" target="10.0.0.27">
+      <data key="d0">0.96</data>
+    </edge>
+    <edge source="10.0.0.32" target="10.0.0.23">
+      <data key="d0">0.985</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.15">
+      <data key="d0">0.74</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.17">
+      <data key="d0">0.63</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.16">
+      <data key="d0">0.905</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.14">
+      <data key="d0">0.935</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.24">
+      <data key="d0">0.7</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.6">
+      <data key="d0">0.505</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.1">
+      <data key="d0">0.86</data>
+    </edge>
+    <edge source="10.0.0.31" target="10.0.0.7">
+      <data key="d0">0.775</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.0">
+      <data key="d0">0.935</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.11">
+      <data key="d0">0.745</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.36">
+      <data key="d0">0.915</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.28">
+      <data key="d0">0.66</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.35">
+      <data key="d0">0.835</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.34">
+      <data key="d0">0.5</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.2">
+      <data key="d0">0.62</data>
+    </edge>
+    <edge source="10.0.0.30" target="10.0.0.29">
+      <data key="d0">0.935</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.19">
+      <data key="d0">0.595</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.5">
+      <data key="d0">0.785</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.22">
+      <data key="d0">0.54</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.20">
+      <data key="d0">0.905</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.21">
+      <data key="d0">0.725</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.3">
+      <data key="d0">0.62</data>
+    </edge>
+    <edge source="10.0.0.37" target="10.0.0.2">
+      <data key="d0">0.985</data>
+    </edge>
+    <edge source="10.0.0.36" target="10.0.0.11">
+      <data key="d0">0.97</data>
+    </edge>
+    <edge source="10.0.0.36" target="10.0.0.28">
+      <data key="d0">0.775</data>
+    </edge>
+    <edge source="10.0.0.36" target="10.0.0.35">
+      <data key="d0">0.66</data>
+    </edge>
+    <edge source="10.0.0.36" target="10.0.0.34">
+      <data key="d0">0.755</data>
+    </edge>
+    <edge source="10.0.0.36" target="10.0.0.0">
+      <data key="d0">0.555</data>
+    </edge>
+    <edge source="10.0.0.36" target="10.0.0.29">
+      <data key="d0">0.855</data>
+    </edge>
+    <edge source="10.0.0.35" target="10.0.0.11">
+      <data key="d0">0.91</data>
+    </edge>
+    <edge source="10.0.0.35" target="10.0.0.0">
+      <data key="d0">0.77</data>
+    </edge>
+    <edge source="10.0.0.35" target="10.0.0.29">
+      <data key="d0">0.985</data>
+    </edge>
+    <edge source="10.0.0.35" target="10.0.0.34">
+      <data key="d0">0.775</data>
+    </edge>
+    <edge source="10.0.0.35" target="10.0.0.23">
+      <data key="d0">0.8</data>
+    </edge>
+    <edge source="10.0.0.34" target="10.0.0.11">
+      <data key="d0">0.795</data>
+    </edge>
+    <edge source="10.0.0.34" target="10.0.0.0">
+      <data key="d0">0.72</data>
+    </edge>
+    <edge source="10.0.0.34" target="10.0.0.28">
+      <data key="d0">0.8</data>
+    </edge>
+    <edge source="10.0.0.34" target="10.0.0.29">
+      <data key="d0">0.69</data>
+    </edge>
+    <edge source="10.0.0.15" target="10.0.0.14">
+      <data key="d0">0.79</data>
+    </edge>
+    <edge source="10.0.0.15" target="10.0.0.17">
+      <data key="d0">0.645</data>
+    </edge>
+    <edge source="10.0.0.15" target="10.0.0.16">
+      <data key="d0">0.595</data>
+    </edge>
+    <edge source="10.0.0.15" target="10.0.0.7">
+      <data key="d0">0.59</data>
+    </edge>
+    <edge source="10.0.0.15" target="10.0.0.6">
+      <data key="d0">0.805</data>
+    </edge>
+    <edge source="10.0.0.15" target="10.0.0.1">
+      <data key="d0">0.83</data>
+    </edge>
+    <edge source="10.0.0.14" target="10.0.0.17">
+      <data key="d0">0.74</data>
+    </edge>
+    <edge source="10.0.0.14" target="10.0.0.16">
+      <data key="d0">0.545</data>
+    </edge>
+    <edge source="10.0.0.14" target="10.0.0.7">
+      <data key="d0">0.88</data>
+    </edge>
+    <edge source="10.0.0.14" target="10.0.0.6">
+      <data key="d0">0.94</data>
+    </edge>
+    <edge source="10.0.0.14" target="10.0.0.1">
+      <data key="d0">0.965</data>
+    </edge>
+    <edge source="10.0.0.17" target="10.0.0.16">
+      <data key="d0">0.925</data>
+    </edge>
+    <edge source="10.0.0.17" target="10.0.0.7">
+      <data key="d0">0.95</data>
+    </edge>
+    <edge source="10.0.0.17" target="10.0.0.6">
+      <data key="d0">0.965</data>
+    </edge>
+    <edge source="10.0.0.17" target="10.0.0.1">
+      <data key="d0">0.77</data>
+    </edge>
+    <edge source="10.0.0.16" target="10.0.0.7">
+      <data key="d0">0.695</data>
+    </edge>
+    <edge source="10.0.0.16" target="10.0.0.6">
+      <data key="d0">0.855</data>
+    </edge>
+    <edge source="10.0.0.16" target="10.0.0.1">
+      <data key="d0">0.635</data>
+    </edge>
+    <edge source="10.0.0.11" target="10.0.0.0">
+      <data key="d0">0.905</data>
+    </edge>
+    <edge source="10.0.0.11" target="10.0.0.28">
+      <data key="d0">0.925</data>
+    </edge>
+    <edge source="10.0.0.11" target="10.0.0.29">
+      <data key="d0">0.95</data>
+    </edge>
+    <edge source="10.0.0.10" target="10.0.0.13">
+      <data key="d0">0.795</data>
+    </edge>
+    <edge source="10.0.0.10" target="10.0.0.12">
+      <data key="d0">0.975</data>
+    </edge>
+    <edge source="10.0.0.10" target="10.0.0.19">
+      <data key="d0">0.79</data>
+    </edge>
+    <edge source="10.0.0.10" target="10.0.0.24">
+      <data key="d0">0.725</data>
+    </edge>
+    <edge source="10.0.0.10" target="10.0.0.25">
+      <data key="d0">0.83</data>
+    </edge>
+    <edge source="10.0.0.10" target="10.0.0.26">
+      <data key="d0">1.0</data>
+    </edge>
+    <edge source="10.0.0.13" target="10.0.0.12">
+      <data key="d0">0.96</data>
+    </edge>
+    <edge source="10.0.0.13" target="10.0.0.19">
+      <data key="d0">0.9</data>
+    </edge>
+    <edge source="10.0.0.13" target="10.0.0.24">
+      <data key="d0">0.54</data>
+    </edge>
+    <edge source="10.0.0.13" target="10.0.0.25">
+      <data key="d0">0.805</data>
+    </edge>
+    <edge source="10.0.0.13" target="10.0.0.26">
+      <data key="d0">0.745</data>
+    </edge>
+    <edge source="10.0.0.12" target="10.0.0.24">
+      <data key="d0">0.815</data>
+    </edge>
+    <edge source="10.0.0.12" target="10.0.0.25">
+      <data key="d0">0.925</data>
+    </edge>
+    <edge source="10.0.0.12" target="10.0.0.26">
+      <data key="d0">0.62</data>
+    </edge>
+    <edge source="10.0.0.19" target="10.0.0.24">
+      <data key="d0">0.865</data>
+    </edge>
+    <edge source="10.0.0.19" target="10.0.0.25">
+      <data key="d0">0.555</data>
+    </edge>
+    <edge source="10.0.0.19" target="10.0.0.26">
+      <data key="d0">0.61</data>
+    </edge>
+    <edge source="10.0.0.18" target="10.0.0.9">
+      <data key="d0">0.9</data>
+    </edge>
+    <edge source="10.0.0.18" target="10.0.0.8">
+      <data key="d0">0.665</data>
+    </edge>
+    <edge source="10.0.0.18" target="10.0.0.4">
+      <data key="d0">0.91</data>
+    </edge>
+    <edge source="10.0.0.18" target="10.0.0.27">
+      <data key="d0">0.55</data>
+    </edge>
+    <edge source="10.0.0.9" target="10.0.0.8">
+      <data key="d0">0.57</data>
+    </edge>
+    <edge source="10.0.0.9" target="10.0.0.4">
+      <data key="d0">0.85</data>
+    </edge>
+    <edge source="10.0.0.9" target="10.0.0.27">
+      <data key="d0">0.52</data>
+    </edge>
+    <edge source="10.0.0.8" target="10.0.0.4">
+      <data key="d0">0.785</data>
+    </edge>
+    <edge source="10.0.0.8" target="10.0.0.27">
+      <data key="d0">0.955</data>
+    </edge>
+    <edge source="10.0.0.5" target="10.0.0.20">
+      <data key="d0">0.51</data>
+    </edge>
+    <edge source="10.0.0.5" target="10.0.0.22">
+      <data key="d0">0.805</data>
+    </edge>
+    <edge source="10.0.0.5" target="10.0.0.23">
+      <data key="d0">0.79</data>
+    </edge>
+    <edge source="10.0.0.5" target="10.0.0.21">
+      <data key="d0">0.82</data>
+    </edge>
+    <edge source="10.0.0.5" target="10.0.0.3">
+      <data key="d0">0.765</data>
+    </edge>
+    <edge source="10.0.0.5" target="10.0.0.2">
+      <data key="d0">0.84</data>
+    </edge>
+    <edge source="10.0.0.4" target="10.0.0.27">
+      <data key="d0">0.695</data>
+    </edge>
+    <edge source="10.0.0.7" target="10.0.0.6">
+      <data key="d0">0.685</data>
+    </edge>
+    <edge source="10.0.0.7" target="10.0.0.1">
+      <data key="d0">0.995</data>
+    </edge>
+    <edge source="10.0.0.6" target="10.0.0.1">
+      <data key="d0">0.515</data>
+    </edge>
+    <edge source="10.0.0.0" target="10.0.0.28">
+      <data key="d0">0.51</data>
+    </edge>
+    <edge source="10.0.0.0" target="10.0.0.29">
+      <data key="d0">0.985</data>
+    </edge>
+    <edge source="10.0.0.3" target="10.0.0.23">
+      <data key="d0">0.9</data>
+    </edge>
+    <edge source="10.0.0.3" target="10.0.0.21">
+      <data key="d0">0.56</data>
+    </edge>
+    <edge source="10.0.0.3" target="10.0.0.22">
+      <data key="d0">0.605</data>
+    </edge>
+    <edge source="10.0.0.3" target="10.0.0.2">
+      <data key="d0">0.59</data>
+    </edge>
+    <edge source="10.0.0.2" target="10.0.0.20">
+      <data key="d0">0.97</data>
+    </edge>
+    <edge source="10.0.0.2" target="10.0.0.21">
+      <data key="d0">0.51</data>
+    </edge>
+    <edge source="10.0.0.25" target="10.0.0.26">
+      <data key="d0">0.71</data>
+    </edge>
+    <edge source="10.0.0.20" target="10.0.0.23">
+      <data key="d0">0.61</data>
+    </edge>
+    <edge source="10.0.0.20" target="10.0.0.21">
+      <data key="d0">0.55</data>
+    </edge>
+    <edge source="10.0.0.20" target="10.0.0.22">
+      <data key="d0">0.63</data>
+    </edge>
+    <edge source="10.0.0.21" target="10.0.0.22">
+      <data key="d0">0.825</data>
+    </edge>
+    <edge source="10.0.0.22" target="10.0.0.23">
+      <data key="d0">0.675</data>
+    </edge>
+  </graph>
+</graphml>
