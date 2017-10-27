@@ -20,14 +20,14 @@ legend.x <- function(x, killed) {
 
 col <- function(topo, degree) {
     ifelse(topo == "caveman",
-           ifelse(degree == 0, 1, 2),
-           ifelse(degree == 0, 3, 4)
+           ifelse(degree == 0, 1, 1),
+           ifelse(degree == 0, 3, 3)
     )
 }
 lty <- function(topo, degree) {
     ifelse(topo == "caveman",
-           ifelse(degree == 0, 1, 2),
-           ifelse(degree == 0, 3, 4)
+           ifelse(degree == 0, 1, 1),
+           ifelse(degree == 0, 3, 2)
     )
 }
 pch <- function(topo, degree) {
@@ -71,12 +71,16 @@ plot.averages <- function(outputFile, d, leg.pos='topright', outputDir = './') {
     par(xpd=T)
     legend(
         leg.pos,
-        legend=c("caveman", "caveman ($d_i = 1$)", "waxman", "waxman ($d_i = 1$)"),
+        # legend=c("caveman", "caveman ($d_i = 1$)", "waxman", "waxman ($d_i = 1$)"),
+        legend=c("caveman", "waxman"),
         ncol=2,
         inset=c(0, 0),
-        col    = col(c("caveman", "caveman", "waxman", "waxman"), c(0, 1, 0, 1)),
-        lty    = lty(c("caveman", "caveman", "waxman", "waxman"), c(0, 1, 0, 1)),
-        pch    = pch(c("caveman", "caveman", "waxman", "waxman"), c(0, 1, 0, 1)),
+        # col    = col(c("caveman", "caveman", "waxman", "waxman"), c(0, 1, 0, 1)),
+        # lty    = lty(c("caveman", "caveman", "waxman", "waxman"), c(0, 1, 0, 1)),
+        # pch    = pch(c("caveman", "caveman", "waxman", "waxman"), c(0, 1, 0, 1)),
+        col    = col(c("caveman", "waxman"), c(1, 1)),
+        lty    = lty(c("caveman", "waxman"), c(1, 1)),
+        pch    = pch(c("caveman", "waxman"), c(1, 1)),
         pt.cex = .8,
         lwd    = 2,
         box.lwd=0,
