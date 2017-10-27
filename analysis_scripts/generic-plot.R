@@ -56,10 +56,10 @@ t.lty <- function(timer) {
     ifelse(timer == "hnd", 1, 2)))))
 }
 t.lwd <- function(timer) {
-    2
+    ifelse(timer == "th", 2, 2)
 }
 t.cex <- function(timer) {
-    0.7
+    ifelse(timer == "th", 0.7, 0.7)
 }
 
 get.exp.name <- function(path) {
