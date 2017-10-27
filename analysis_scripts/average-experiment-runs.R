@@ -46,7 +46,9 @@ for (f in arguments$folders) {
 avg = ddply(ds, arguments$fields, function(x) {
     prince = subset(x, prince == 1)
     olsr = subset(x, prince == 0)
-    return(data.frame(abs.gain=sum(olsr$integral)/nrow(olsr) - sum(prince$integral)/nrow(prince)))
+    olsr.int = sum(olsr$integral)/nrow(olsr)
+    prince.int = sum(prince$integral)/nrow(prince)
+    return(data.frame(abs.gain=olsr.int - prince.int, rel.gain=1-prince.int/olsr.int, olsr.int=olsr.int, prince.int=prince.int))
 })
 
 write.csv(avg, file=arguments$out, row.names=F)
