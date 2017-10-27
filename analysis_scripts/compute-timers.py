@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (C) 2017 Michele Segata <msegata@disi.unitn.it>
 # Copyright (C) 2017 Nicolo' Facchi <nicolo.facchi@unitn.it>
@@ -18,11 +19,31 @@
 # 02110-1301, USA.
 #
 
+from collections import defaultdict
 from os import listdir
 from os.path import isdir
 import networkx as nx
 import sys
 from math import sqrt
+
+
+def __mod_bc(g):
+    n_nodes = len(g.nodes())
+    ap = [x for x in nx.articulation_points(g)]
+    bconn = nx.biconnected_component_subgraphs(g)
+    bc = defaultdict(int)
+    for bcs in bconn:
+        for n in ap:
+            if n in bcs.nodes():
+                bc[n] += nx.betweenness_centrality(bcs, weight='weight',
+                                                   endpoints=True,
+                                                   normalized=False)[n]
+    for n, b in nx.betweenness_centrality(g, weight='weight', endpoints=True,
+                                          normalized=False).iteritems():
+        if n not in ap:
+            bc[n] = b
+        bc[n] /= n_nodes * (n_nodes - 1) * 0.5
+    return bc
 
 
 def __get_intervals(nodes, dg, r, bc):
@@ -47,6 +68,8 @@ def __compute_intervals(graph, return_bc=False, use_degree=True):
     dg = dict((v, 1) for v in graph.nodes())
     r = len(graph.nodes())
     ints_no_degree = __get_intervals(graph.nodes(), dg, r, bc)
+    mbc = __mod_bc(graph)
+    ints_mbc = __get_intervals(graph.nodes(), dg, r, mbc)
     dg = dict((v, d) for v, d in graph.degree().iteritems())
     r = len(graph.edges())
     ints_degree = __get_intervals(graph.nodes(), dg, r, bc)
@@ -60,9 +83,42 @@ def __compute_intervals(graph, return_bc=False, use_degree=True):
     else:
         ints = dict((node, (ints_degree[node][0], ints_degree[node][1],
                             ints_no_degree[node][0], ints_no_degree[node][1],
-                            bc[node], graph.degree()[node]))
+                            bc[node], graph.degree()[node],
+                            ints_mbc[node][0], ints_mbc[node][1],
+                            mbc[node]))
                     for node in graph.nodes())
     return ints
+
+
+def __get_loss_strategy(values, di1, mod_bc, candidates, subset=False):
+    if not di1:
+        i_th = 0
+        i_bc = 4
+    elif not mod_bc:
+        i_th = 2
+        i_bc = 4
+    else:
+        i_th = 6
+        i_bc = 8
+
+    if subset:
+        cd = candidates[0:5] + candidates[-5:]
+    else:
+        cd = candidates
+
+    th = dict([(n, v[i_th]) for n, v in values.iteritems()])
+    bc = dict([(n, v[i_bc]) for n, v in values.iteritems()])
+    return __get_loss(th, bc, cd)
+
+
+def __get_loss(th, bc, cn, h=2):
+    # on = [i[0] for i in sorted(bc.items(), key=lambda x: x[1], reverse=True)]
+    # for n in on:
+    #     if n in cn:
+    #         print(n, th[n], bc[n])
+    lpop = sum([th[n] * bc[n] for n in cn])
+    lolsr = sum([h * bc[n] for n in cn])
+    return 1 - lpop / lolsr
 
 
 def get_strategies(path):
@@ -87,11 +143,27 @@ def write_timers(graph):
     ap = [x for x in nx.articulation_points(g)]
     no_leaves_nodes = nx.k_core(g, 2).nodes()
     cn = [x for x in g.nodes() if x not in ap and x in no_leaves_nodes]
-    out.write("node,h,tc,hnd,tcnd,bc,d,ap\n")
-    for n, (h, tc, h2, tc2, bc, d) in intv.iteritems():
-        out.write("%s,%f,%f,%f,%f,%f,%d,%d\n" % (n, h, tc, h2, tc2, bc, d,
-                                                 0 if n in cn else 1))
+    out.write("node,h,tc,hnd,tcnd,hm,tcm,bc,d,ap,mbc\n")
+    for n, (h, tc, h2, tc2, bc, d, h3, tc3, mbc) in intv.iteritems():
+        out.write("%s,%f,%f,%f,%f,%f,%f,%f,%d,%d,%f\n" %
+                  (n, h, tc, h2, tc2, h3, tc3, bc, d, 0 if n in cn else 1, mbc))
     out.close()
+
+    # import matplotlib.pyplot as plt
+    # nx.draw_networkx(g, with_labels=True, pos=nx.spring_layout(g))
+    # plt.show()
+    print("Rel. GLR                                : %f" %
+          __get_loss_strategy(intv, False, False, cn))
+    print("Rel. GLR (+5, -5)                       : %f" %
+          __get_loss_strategy(intv, False, False, cn, subset=True))
+    print("Rel. GLR (d_i = 1)                      : %f" %
+          __get_loss_strategy(intv, True, False, cn))
+    print("Rel. GLR (+5, -5) (d_i = 1)             : %f" %
+          __get_loss_strategy(intv, True, False, cn, subset=True))
+    print("Rel. GLR (d_i = 1, modified BC)         : %f" %
+          __get_loss_strategy(intv, True, True, cn))
+    print("Rel. GLR (+5, -5) (d_i = 1, modified BC): %f" %
+          __get_loss_strategy(intv, True, True, cn, subset=True))
 
 
 if len(sys.argv) < 2:
