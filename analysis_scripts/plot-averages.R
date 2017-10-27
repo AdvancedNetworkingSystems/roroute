@@ -15,7 +15,7 @@ transform.x <- function(x, killed) {
 }
 legend.x <- function(x, killed) {
     n = length(killed[killed<0])
-    ifelse(x <= max(killed), x, x - max(killed) - n - 1)
+    ifelse(x <= max(killed), x+1, x - max(killed) - n - 1)
 }
 
 col <- function(topo, degree) {
