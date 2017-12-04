@@ -23,7 +23,8 @@ def reserve(testbed, exp_name, duration, rspec):
     end = dt.datetime.utcnow() + dt.timedelta(hours=int(duration))
     end = end.strftime("%Y%m%dT%H:%M:%S%Z")
     checkcmd = "omni -c ./omni_config status {} {}".format(args, exp_name)
-    if local(checkcmd).stderr.find("geni_ready") != -1:
+    cmd_result = local(checkcmd)
+    if cmd_result.stderr.find("geni_ready") != -1:
         print("Slice already reserved. Resources ready")
         return True
 
@@ -46,10 +47,16 @@ def reserve(testbed, exp_name, duration, rspec):
     # Wait till reserved
     tic = time.time()
     n = 1
-    while local(checkcmd).stderr.find("geni_ready") == -1:
+    cmd_result = local(checkcmd)
+    while cmd_result.stderr.find("geni_ready") == -1:
+        if cmd_result.stderr.find("geni_failed") != -1:
+            print("One node failed to boot. Output:")
+            print(cmd_result.stderr)
+            return False
         print("Waiting for nodes to perform boot... Attempt {}".format(n))
         n += 1
         time.sleep(10)
+        cmd_result = local(checkcmd)
     toc = time.time() - tic
     print("Resources ready." + " Took: {}".format(toc))
     return True
