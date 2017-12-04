@@ -25,6 +25,8 @@ import inspect
 import json
 import shutil
 import networkx as nx
+from os.path import join
+
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -165,6 +167,11 @@ class OlsrPrinceExp:
     def load_routing_tables(self, node_name, result_dir):
         rt_list = []
         route_files_list = []
+
+        fail_index = None
+        if node_name in self.killed_nodes_dict.keys():
+            fail_index = self.killed_nodes_dict[node_name][0]
+
         for root, dirs, files in os.walk(result_dir):
             for file_name in files:
                 # if file_name.endswith('.pyroute'):
@@ -208,6 +215,8 @@ class OlsrPrinceExp:
 
                 last_rt_json = rt_json
             else:
+                if fail_index is not None and res_idx >= fail_index:
+                    last_rt_json = None
                 rt = RoutingTable(res_idx, 0, last_rt_json, node_name)
                 rt_list.append(rt)
 
@@ -337,20 +346,28 @@ class OlsrPrinceExp:
     def get_node_topologies(self, node_name):
         return self.nodes_exp_data_dict[node_name][2]
 
-    def get_killed_nodes_and_times(self):
+    def get_killed_nodes_and_times(self, strategy, exp_type):
         '''
         Return a dictionary whose keys are the nodes that are killed during an
         experiment and the values are tuples containing (index, ts)
         '''
         killed_nodes_dict = {}
-        for node_name in self.nodes_exp_data_dict.keys():
-            rt_list = self.nodes_exp_data_dict[node_name][0]
-            for rt in rt_list:
-                rt_json = rt.get_rt_json()
-                if not rt_json:
-                    killed_nodes_dict[node_name] = rt.get_ts_s_ms()
-                    break
-
+        for node_name in self.nodes_names_list:
+            result_dir = self.exp_base_dir_name_str + '/' + node_name + \
+                          '_' + self.exp_name + '/' + strategy + \
+                          '/' + exp_type
+            for root, dirs, files in os.walk(result_dir):
+                for file_name in files:
+                    if file_name.endswith('.pyroute') and \
+                      os.path.getsize(join(result_dir, file_name)) == 0:
+                        res_timestamp = file_name.split('.')[0]
+                        res_timestamp = res_timestamp.split('_')[2:5]
+                        ts = float("%s.%s" % (res_timestamp[1],
+                                              res_timestamp[2]))
+                        killed_nodes_dict[node_name] = (int(res_timestamp[0]),
+                                                        ts)
+                        break
+        self.killed_nodes_dict = killed_nodes_dict
         return killed_nodes_dict
 
     def compute_desynchronization_rt_at_idx0(self):
@@ -566,6 +583,9 @@ class OlsrPrinceAnalyzer:
                                                self.master_node_name,
                                                self.highest_res_index,
                                                'olsrd2_vanilla')
+            kn_olsrd2_vanilla = \
+                olsrd2_vanilla_exp.get_killed_nodes_and_times(strategy,
+                                                              'olsrd2_vanilla')
             olsrd2_vanilla_exp.load_experiment_data()
             olsrd2_vanilla_exp.compute_desynchronization_rt_at_idx0()
             self.desync_idx0_olsrd2_vanilla_dict[strategy] =\
@@ -582,6 +602,8 @@ class OlsrPrinceAnalyzer:
                                        self.master_node_name,
                                        self.highest_res_index,
                                        'prince')
+            kn_prince = \
+                prince_exp.get_killed_nodes_and_times(strategy, 'prince')
             prince_exp.load_experiment_data()
             prince_exp.compute_desynchronization_rt_at_idx0()
             self.desync_idx0_prince_dict[strategy] =\
@@ -594,9 +616,7 @@ class OlsrPrinceAnalyzer:
             self.strategy_exps_dict[strategy] = (olsrd2_vanilla_exp,
                                                  prince_exp)
 
-            self.killed_nodes_olsrd2_vanilla_dict[strategy] =\
-                self.strategy_exps_dict[
-                    strategy][0].get_killed_nodes_and_times()
+            self.killed_nodes_olsrd2_vanilla_dict[strategy] = kn_olsrd2_vanilla
             print("Killed nodes for olsrd2_vanilla (idx, ts):")
             for node_name\
                     in self.killed_nodes_olsrd2_vanilla_dict[strategy].keys():
@@ -606,8 +626,7 @@ class OlsrPrinceAnalyzer:
                                      node_killed_ts[0],
                                      node_killed_ts[1]))
 
-            self.killed_nodes_prince_dict[strategy] = self.strategy_exps_dict[
-                strategy][1].get_killed_nodes_and_times()
+            self.killed_nodes_prince_dict[strategy] = kn_prince
             print("Killed nodes for prince (idx, ts):")
             for node_name in self.killed_nodes_prince_dict[strategy].keys():
                 node_killed_ts =\
