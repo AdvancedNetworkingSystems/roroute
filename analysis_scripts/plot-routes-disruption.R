@@ -3,7 +3,6 @@ source('plot-utils.R')
 source('generic-plot.R')
 
 args = commandArgs(trailingOnly=T)
-# args = c("t9_summary")
 
 folder = args[1]
 if (length(args) == 2) {
