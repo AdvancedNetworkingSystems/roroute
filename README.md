@@ -1,5 +1,14 @@
 POPROW Scripts Repo
-===
+===================
+
+```
+################################################################################
+#                                   WARNING                                    #
+################################################################################
+```
+
+The documentation, as well as the scripts, are still being written and refined.
+Please be aware that they might be incomplete.
 
 # Testbed Resource Allocation
 
