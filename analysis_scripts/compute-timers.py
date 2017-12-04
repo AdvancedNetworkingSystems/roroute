@@ -30,19 +30,25 @@ from math import sqrt
 def __mod_bc(g):
     n_nodes = len(g.nodes())
     ap = [x for x in nx.articulation_points(g)]
-    bconn = nx.biconnected_component_subgraphs(g)
+    bconn = list(nx.biconnected_component_subgraphs(g))
+    cp_dict = {}
+    print len(g)
+    for p in ap:
+        cp_dict[p] = [b for b in bconn if p in b]
     bc = defaultdict(int)
-    for bcs in bconn:
-        for n in ap:
-            if n in bcs.nodes():
-                bc[n] += nx.betweenness_centrality(bcs, weight='weight',
-                                                   endpoints=True,
-                                                   normalized=False)[n]
+    for p, bconns in cp_dict.items():
+        for bcs in bconns:
+            b = nx.betweenness_centrality(bcs, weight='weight',
+                                                   endpoints=False,
+                                                   normalized=False)[p]
+            bc[p] += b
+        bc[p] += (n_nodes - 1)
     for n, b in nx.betweenness_centrality(g, weight='weight', endpoints=True,
                                           normalized=False).iteritems():
         if n not in ap:
             bc[n] = b
-        bc[n] /= n_nodes * (n_nodes - 1) * 0.5
+        #bc[n] /= n_nodes * (n_nodes - 1)
+        # FIXME check that this is the same normalization the other method does
     return bc
 
 
@@ -63,16 +69,19 @@ def __compute_intervals(graph, return_bc=False, use_degree=True):
     :param graph: graph
     :return: a dictionary in the form "node: (hello, tc)"
     """
-    bc = nx.betweenness_centrality(graph, weight="weight", endpoints=True)
+    bc = nx.betweenness_centrality(graph, weight="weight", endpoints=True, normalized=False)
 
     dg = dict((v, 1) for v in graph.nodes())
-    r = len(graph.nodes())
+    r = len(graph.edges())
     ints_no_degree = __get_intervals(graph.nodes(), dg, r, bc)
     mbc = __mod_bc(graph)
     ints_mbc = __get_intervals(graph.nodes(), dg, r, mbc)
     dg = dict((v, d) for v, d in graph.degree().iteritems())
     r = len(graph.edges())
     ints_degree = __get_intervals(graph.nodes(), dg, r, bc)
+    for n, v in sorted(mbc.items(), key=lambda x: x[1]):
+            print("%i %s %.4f %.4f %.4f %.4f" %(n in nx.articulation_points(graph), n, bc[n], mbc[n], ints_mbc[n][0], ints_no_degree[n][0]))
+
 
     # return a dictionary node -> (hello, tc)
     if not return_bc:
