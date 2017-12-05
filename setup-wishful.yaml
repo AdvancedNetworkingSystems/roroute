@@ -1,0 +1,10 @@
+---
+- hosts: "{{ testbed | default('twist') }}"
+  tasks:
+  - name: set home
+    set_fact:
+      home_dir: "{{ lookup('env', 'HOME') }}"
+  - name: setup wishful poprow
+    command: "/usr/bin/env sh setup-wishful.sh"
+    args:
+      chdir: "{{ ansible_env.HOME }}"
