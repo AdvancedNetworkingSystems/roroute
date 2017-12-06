@@ -21,6 +21,9 @@ export PATH=$PATH:$HOME/
 if [ -d wishful ]; then
 	cd wishful
 	repo forall -c 'git pull --rebase'
+	source ./dev/bin/activate
+	pip3 install -U -r ./.repo/manifests/requirements.txt
+	cd ..
 else
 	wget https://storage.googleapis.com/git-repo-downloads/repo
 	chmod a+x ./repo
