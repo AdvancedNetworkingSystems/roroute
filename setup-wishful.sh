@@ -21,7 +21,7 @@ export PATH=$PATH:$HOME/
 if [ -d wishful ]; then
 	cd wishful
 	repo forall -c 'git pull --rebase'
-	source ./dev/bin/activate
+	. ./dev/bin/activate
 	pip3 install -U -r ./.repo/manifests/requirements.txt
 	cd ..
 else
@@ -34,7 +34,7 @@ else
 	repo sync
 	repo forall -c 'git checkout master'
 	virtualenv -p /usr/bin/python3 ./dev
-	source ./dev/bin/activate
+	. ./dev/bin/activate
 	pip3 install -U -r ./.repo/manifests/requirements.txt
 	cd ..
 fi
