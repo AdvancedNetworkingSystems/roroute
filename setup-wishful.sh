@@ -23,6 +23,8 @@ if [ -d wishful ]; then
 	repo forall -c 'git pull --rebase'
 	. ./dev/bin/activate
 	pip3 install -U -r ./.repo/manifests/requirements.txt
+	pip3 install pyric pyroute2 ipaddr netdiff scipy
+	pip3 install networkx==1.11
 	cd ..
 else
 	wget https://storage.googleapis.com/git-repo-downloads/repo
@@ -36,6 +38,8 @@ else
 	virtualenv -p /usr/bin/python3 ./dev
 	. ./dev/bin/activate
 	pip3 install -U -r ./.repo/manifests/requirements.txt
+	pip3 install pyric pyroute2 ipaddr netdiff scipy
+	pip3 install networkx==1.11
 	cd ..
 fi
 
