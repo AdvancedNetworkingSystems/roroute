@@ -4,5 +4,5 @@ if [ -d wishful-poprow ]; then
 	cd wishful-poprow
 	git pull --rebase origin master
 else
-	git clone ssh://git@ans.disi.unitn.it:6022/wishful-poprow.git
+	git clone https://ans.disi.unitn.it/redmine/wishful-poprow.git
 fi
