@@ -42,3 +42,6 @@ fi
 
 # install Prince
 ./setup-prince.sh
+
+# install poprow wishful scripts
+./install-wishful-poprow.sh
