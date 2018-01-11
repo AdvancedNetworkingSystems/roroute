@@ -31,7 +31,7 @@ else
 	chmod a+x ./repo
 	mkdir -p wishful
 	cd wishful
-	repo init -u https://ans.disi.unitn.it/redmine/manifests-wishful.git
+	repo init -u https://github.com/AdvancedNetworkingSystems/manifests-wishful
 	repo init -m user.xml
 	repo sync
 	repo forall -c 'git checkout master'
