@@ -14,15 +14,15 @@ chmod a+x ./repo
 mkdir -p wishful
 cd wishful
 repo init -u https://github.com/AdvancedNetworkingSystems/manifests-wishful
-cd manifests-wishful
+cd .repo/manifests
 git checkout alix
-cd ..
+cd ../..
 repo init -m user.xml
 repo sync
 repo forall -c 'git checkout master'
-cd
 cp .repo/manifests/requirements.txt /tmp/
-rm -rf $HOME/.repo $HOME/repo
+cd
+rm -rf $HOME/wishful/.repo $HOME/repo
 
 sudo apt-get install -y python3-dev python3-pip
 virtualenv -p /usr/bin/python3 ./dev
