@@ -26,8 +26,9 @@ rm -rf $HOME/wishful/.repo $HOME/repo
 
 sudo apt-get install -y python3-dev python3-pip
 sudo pip3 install virtualenv
+cd wishful
 virtualenv -p /usr/bin/python3 ./dev
 . ./dev/bin/activate
 pip3 install -U -r /tmp/requirements.txt
-pip3 install pyric pyroute2 ipaddr netdiff scipy
+pip3 install pyric pyroute2 ipaddr netdiff==0.5.2
 pip3 install networkx==1.11
