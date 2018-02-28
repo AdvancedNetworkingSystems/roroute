@@ -25,6 +25,7 @@ cd
 rm -rf $HOME/wishful/.repo $HOME/repo
 
 sudo apt-get install -y python3-dev python3-pip
+sudo pip3 install virtualenv
 virtualenv -p /usr/bin/python3 ./dev
 . ./dev/bin/activate
 pip3 install -U -r /tmp/requirements.txt
